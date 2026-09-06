@@ -1,4 +1,3 @@
-import sys
 from pyspark.sql import functions as F
 
 from config.bcb_series import BCB_SERIES
@@ -11,10 +10,14 @@ def transform_series(spark, series_name: str):
     bronze_path = f"s3a://{BRONZE_BUCKET}/{series_name}"
     silver_path = f"s3a://{SILVER_BUCKET}/{series_name}"
 
+    series_config = BCB_SERIES[series_name]
+    unit = series_config["unit"]
+
     print("")
     print("=" * 60)
     print(f"Start Silver transformation: {series_name}")
     print(f"Bronze path: {bronze_path}")
+    print(f"Unit: {unit}")
     print("=" * 60)
 
     df = spark.read.parquet(bronze_path)
@@ -32,6 +35,13 @@ def transform_series(spark, series_name: str):
         .dropDuplicates(["data"])
         .orderBy("data")
     )
+
+    if unit == "BRL_MILLIONS":
+
+        df = df.withColumn(
+            "valor",
+            F.col("valor") * 1_000_000
+        )
 
     print("Silver schema:")
     df.printSchema()
