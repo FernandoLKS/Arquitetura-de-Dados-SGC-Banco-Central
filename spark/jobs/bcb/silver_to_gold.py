@@ -7,32 +7,75 @@ from config.storage import SILVER_BUCKET, GOLD_BUCKET
 from utils.spark_session import create_spark_session
 
 
-def read_series(spark, series_name):
-
-    silver_path = (
-        f"s3a://{SILVER_BUCKET}/"
-        f"{series_name}"
-    )
-
-    return spark.read.parquet(silver_path)
-
-
-def prepare_series(
+def path_exists(
     spark,
-    series_name,
-    frequency
+    path,
 ):
 
-    df = read_series(
-        spark,
-        series_name
+    hadoop_path = (
+        spark._jvm.org.apache.hadoop.fs.Path(path)
     )
 
-    print(f"Processing: {series_name}")
+    fs = hadoop_path.getFileSystem(
+        spark._jsc.hadoopConfiguration()
+    )
 
-    # ---------------------------------------------------------
-    # 1. CREATE REFERENCE MONTH
-    # ---------------------------------------------------------
+    return fs.exists(hadoop_path)
+
+
+def read_series(
+    spark,
+    series_name,
+    frequency,
+    silver_path,
+):
+
+    print("")
+    print("-" * 60)
+    print(f"Processing: {series_name}")
+    print(f"Frequency: {frequency}")
+    print("-" * 60)
+
+
+    if not path_exists(
+        spark,
+        silver_path,
+    ):
+
+        print(
+            "Silver data not found."
+        )
+
+        print(
+            "Skipping series."
+        )
+
+        return None
+
+
+    df = (
+        spark.read
+        .parquet(
+            silver_path
+        )
+    )
+
+    if df.rdd.isEmpty():
+
+        print(
+            "Silver is empty."
+        )
+
+        print(
+            "Skipping series."
+        )
+
+        return None
+
+    print(
+        f"Silver rows: {df.count()}"
+    )
+
 
     df = (
         df
@@ -40,128 +83,190 @@ def prepare_series(
             "reference_month",
             F.date_trunc(
                 "month",
-                F.col("data")
-            )
-        )
-        .select(
-            "reference_month",
-            "valor"
-        )
-        .withColumn(
-            "series_name",
-            F.lit(series_name)
+                F.col("data"),
+            ),
         )
     )
 
-    # ---------------------------------------------------------
-    # 2. AGGREGATE TO MONTHLY
-    # ---------------------------------------------------------
+
+    df = (
+        df
+        .select(
+            "reference_month",
+            "valor",
+        )
+        .withColumn(
+            "series_name",
+            F.lit(series_name),
+        )
+    )
 
     if frequency == "daily":
 
-        # Daily series:
-        # calculate monthly average
+        print(
+            "Aggregation: daily -> monthly average"
+        )
 
         df = (
             df
             .groupBy(
                 "reference_month",
-                "series_name"
+                "series_name",
             )
             .agg(
-                F.avg("valor").alias("valor")
+                F.avg(
+                    "valor"
+                ).alias("valor")
+            )
+        )
+
+
+    elif frequency == "monthly":
+
+        print(
+            "Aggregation: monthly -> monthly value"
+        )
+
+        df = (
+            df
+            .groupBy(
+                "reference_month",
+                "series_name",
+            )
+            .agg(
+                F.first(
+                    "valor",
+                    ignorenulls=True,
+                ).alias("valor")
             )
         )
 
     else:
 
-        # Monthly series:
-        # keep the available monthly value
-
-        df = (
-            df
-            .groupBy(
-                "reference_month",
-                "series_name"
-            )
-            .agg(
-                F.first(
-                    "valor",
-                    ignorenulls=True
-                ).alias("valor")
-            )
+        raise ValueError(
+            f"Frequency not supported: {frequency}"
         )
 
     return df
 
 
-def build_gold(spark):
+def build_gold(
+    spark,
+):
 
     series_dataframes = []
 
-    # ---------------------------------------------------------
-    # 3. PROCESS ALL SERIES
-    # ---------------------------------------------------------
-
     for series_name, series_config in BCB_SERIES.items():
 
-        df = prepare_series(
-            spark=spark,
-            series_name=series_name,
-            frequency=series_config["frequency"]
+        silver_path = (
+            f"s3a://{SILVER_BUCKET}/"
+            f"{series_name}"
         )
 
-        series_dataframes.append(df)
+        df = read_series(
+            spark=spark,
+            series_name=series_name,
+            frequency=series_config["frequency"],
+            silver_path=silver_path,
+        )
 
-    # ---------------------------------------------------------
-    # 4. UNION ALL SERIES
-    # ---------------------------------------------------------
+        if df is not None:
 
-    print("")
-    print("Combining series...")
+            series_dataframes.append(
+                df
+            )
+
+
+    if not series_dataframes:
+
+        print(
+            "No Silver data available."
+        )
+
+        return None
+
 
     combined_df = reduce(
-        lambda left, right: left.unionByName(right),
-        series_dataframes
+        lambda left, right:
+        left.unionByName(right),
+        series_dataframes,
     )
 
-    print("")
-    print("Long format:")
-
-    combined_df.printSchema()
-
-    print(
-        "Rows before pivot:",
-        combined_df.count()
-    )
-
-    # ---------------------------------------------------------
-    # 5. PIVOT
-    # ---------------------------------------------------------
-
-    print("")
-    print("Creating monthly Gold table...")
 
     gold_df = (
         combined_df
-        .groupBy("reference_month")
-        .pivot("series_name")
+        .groupBy(
+            "reference_month",
+        )
+        .pivot(
+            "series_name",
+        )
         .agg(
             F.first(
                 "valor",
-                ignorenulls=True
+                ignorenulls=True,
             )
         )
-        .orderBy("reference_month")
+        .orderBy(
+            "reference_month",
+        )
     )
 
     return gold_df
 
 
-def update_gold(
-    spark,
-    new_gold_df
+def write_gold(
+    gold_df,
+    gold_path,
 ):
+
+    if gold_df is None:
+
+        print(
+            "No data available for Gold."
+        )
+
+        return
+
+    if gold_df.rdd.isEmpty():
+
+        print(
+            "Gold DataFrame is empty."
+        )
+
+        return
+
+
+    rows = gold_df.count()
+
+    print(
+        f"Gold rows: {rows}"
+    )
+
+    print(
+        "Overwriting Gold..."
+    )
+
+    (
+        gold_df
+        .write
+        .mode("overwrite")
+        .partitionBy(
+            "reference_month"
+        )
+        .parquet(
+            gold_path
+        )
+    )
+
+    print(
+        "Gold overwrite completed successfully."
+    )
+
+
+def main():
+
+    spark = create_spark_session()
 
     gold_path = (
         f"s3a://{GOLD_BUCKET}/"
@@ -170,143 +275,17 @@ def update_gold(
 
     print("")
     print("=" * 60)
-    print("Updating Gold")
+    print("Starting Silver -> Gold")
     print("=" * 60)
 
-    # ---------------------------------------------------------
-    # 6. CHECK IF GOLD EXISTS
-    # ---------------------------------------------------------
 
-    gold_exists = False
-
-    try:
-
-        spark.read.parquet(
-            gold_path
-        ).limit(1).count()
-
-        gold_exists = True
-
-    except Exception:
-
-        gold_exists = False
-
-    # ---------------------------------------------------------
-    # 7. INITIAL LOAD
-    # ---------------------------------------------------------
-
-    if not gold_exists:
-
-        print("Gold does not exist.")
-        print("Performing initial load.")
-
-        (
-            new_gold_df.write
-            .mode("overwrite")
-            .parquet(gold_path)
-        )
-
-        print("Initial Gold load completed.")
-
-        return
-
-    # ---------------------------------------------------------
-    # 8. READ EXISTING GOLD
-    # ---------------------------------------------------------
-
-    existing_gold_df = (
-        spark.read
-        .parquet(gold_path)
-    )
-
-    # ---------------------------------------------------------
-    # 9. REMOVE MONTHS THAT WILL BE UPDATED
-    # ---------------------------------------------------------
-
-    existing_without_new = (
-        existing_gold_df.alias("existing")
-        .join(
-            new_gold_df
-            .select("reference_month")
-            .distinct()
-            .alias("new"),
-            on=F.col(
-                "existing.reference_month"
-            ) == F.col(
-                "new.reference_month"
-            ),
-            how="left_anti"
-        )
-    )
-
-    # ---------------------------------------------------------
-    # 10. UNION OLD + NEW
-    # ---------------------------------------------------------
-
-    final_gold_df = (
-        existing_without_new
-        .unionByName(
-            new_gold_df,
-            allowMissingColumns=True
-        )
-        .orderBy("reference_month")
-    )
-
-    # ---------------------------------------------------------
-    # 11. WRITE GOLD
-    # ---------------------------------------------------------
-
-    (
-        final_gold_df.write
-        .mode("overwrite")
-        .parquet(gold_path)
-    )
-
-    print(
-        "Gold updated successfully."
-    )
-
-    print(
-        "Gold rows:",
-        final_gold_df.count()
-    )
-
-
-def main():
-
-    spark = create_spark_session()
-
-    spark.sparkContext.setLogLevel("WARN")
-
-    print("")
-    print("=" * 60)
-    print("Starting Silver -> Gold transformation")
-    print("=" * 60)
-
-    # ---------------------------------------------------------
-    # 12. BUILD NEW GOLD DATA
-    # ---------------------------------------------------------
-
-    new_gold_df = build_gold(spark)
-
-    print("")
-    print("New Gold schema:")
-
-    new_gold_df.printSchema()
-
-    print("")
-    print(
-        "New Gold rows:",
-        new_gold_df.count()
-    )
-
-    # ---------------------------------------------------------
-    # 13. UPDATE GOLD
-    # ---------------------------------------------------------
-
-    update_gold(
+    gold_df = build_gold(
         spark=spark,
-        new_gold_df=new_gold_df
+    )
+
+    write_gold(
+        gold_df=gold_df,
+        gold_path=gold_path,
     )
 
     spark.stop()

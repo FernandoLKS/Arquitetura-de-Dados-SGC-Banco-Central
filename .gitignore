@@ -6,3 +6,10 @@ __pycache__/
 airflow/logs/
 .DS_Store
 Thumbs.db
+run_pipeline.ps1
+airflow/logs/
+dbt/target/
+dbt/logs/
+dbt/tests/
+dbt/dbt_packages/
+dbt/.user.yml

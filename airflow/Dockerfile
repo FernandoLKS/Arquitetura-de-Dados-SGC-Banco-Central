@@ -1,4 +1,4 @@
-FROM apache/airflow:3.0.6
+FROM apache/airflow:2.9.1
 
 USER root
 
@@ -8,3 +8,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 USER airflow
+
+RUN pip install --no-cache-dir \
+    apache-airflow-providers-docker \
+    apache-airflow-providers-postgres

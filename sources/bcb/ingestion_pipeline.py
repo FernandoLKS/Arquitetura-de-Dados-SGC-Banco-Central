@@ -1,3 +1,5 @@
+import sys
+
 from datetime import datetime, timezone, timedelta
 
 from .api_client import get_series
@@ -5,7 +7,7 @@ from config.bcb_series import BCB_SERIES
 from .bronze_storage import save_raw
 from .ingestion_state import (
     get_last_reference_date,
-    update_state
+    update_state,
 )
 
 
@@ -16,14 +18,14 @@ def format_bcb_date(date):
 def parse_bcb_date(date_string):
     return datetime.strptime(
         date_string,
-        "%d/%m/%Y"
+        "%d/%m/%Y",
     ).date()
 
 
 def parse_iso_date(date_string):
     return datetime.strptime(
         date_string,
-        "%Y-%m-%d"
+        "%Y-%m-%d",
     ).date()
 
 
@@ -31,10 +33,10 @@ def get_data(
     series_code,
     frequency,
     start_date,
-    end_date
+    end_date,
 ):
-
     data = []
+
     current_start = start_date
 
     while current_start <= end_date:
@@ -43,14 +45,14 @@ def get_data(
 
             current_end = min(
                 current_start + timedelta(days=1825),
-                end_date
+                end_date,
             )
 
         elif frequency == "daily":
 
             current_end = min(
                 current_start + timedelta(days=3652),
-                end_date
+                end_date,
             )
 
         else:
@@ -68,23 +70,31 @@ def get_data(
         chunk = get_series(
             series_code=series_code,
             start_date=format_bcb_date(current_start),
-            end_date=format_bcb_date(current_end)
+            end_date=format_bcb_date(current_end),
         )
 
         data.extend(chunk)
 
-        current_start = (
-            current_end + timedelta(days=1)
-        )
+        current_start = current_end + timedelta(days=1)
 
     return data
 
 
-def ingest():
+def ingest(
+    ingestion_date,
+    batch_id,
+):
+    """
+    Executa a ingestão incremental das séries do BCB.
 
-    ingestion_date = datetime.now(
-        timezone.utc
-    ).strftime("%Y-%m-%d")
+    ingestion_date:
+        Data em que a ingestão está sendo executada.
+
+    batch_id:
+        Identificador único da execução da DAG.
+        O mesmo batch_id será utilizado pela etapa
+        Bronze -> Silver.
+    """
 
     today = datetime.now(
         timezone.utc
@@ -92,14 +102,21 @@ def ingest():
 
     failed_series = []
 
+    print("")
+    print("=" * 60)
+    print("Starting BCB ingestion")
+    print(f"Ingestion date: {ingestion_date}")
+    print(f"Batch ID: {batch_id}")
+    print("=" * 60)
+
     for series_name, series_config in BCB_SERIES.items():
 
         print("")
-        print("=" * 60)
-        print(f"Start: {series_name}")
-        print(f"Code: {series_config['code']}")
-        print(f"Frequency: {series_config['frequency']}")
-        print("=" * 60)
+        print("-" * 60)
+        print(f"Starting ingestion: {series_name}")
+        print(f"Ingestion date: {ingestion_date}")
+        print(f"Batch ID: {batch_id}")
+        print("-" * 60)
 
         try:
 
@@ -109,113 +126,146 @@ def ingest():
 
             if last_reference_date:
 
-                start_date = (
-                    parse_bcb_date(last_reference_date)
-                    + timedelta(days=1)
+                last_date = parse_bcb_date(
+                    last_reference_date
                 )
 
+                # Começamos na última data conhecida.
+                #
+                # A filtragem abaixo garante que a própria
+                # última data não seja novamente gravada.
+                start_date = last_date
+
                 print(
-                    f"Last reference: {last_reference_date}"
+                    f"Last reference date: {last_date}"
                 )
 
             else:
+
+                last_date = None
 
                 start_date = parse_iso_date(
                     series_config["available_from"]
                 )
 
                 print(
-                    "No history found. "
-                    "Running initial load."
+                    "No previous state found."
+                )
+
+                print(
+                    f"Starting from: {start_date}"
                 )
 
             if start_date > today:
 
                 print(
-                    "No new data available."
+                    "Start date is after today."
+                )
+
+                print(
+                    "Skipping series."
                 )
 
                 continue
+
 
             data = get_data(
                 series_code=series_config["code"],
                 frequency=series_config["frequency"],
                 start_date=start_date,
-                end_date=today
+                end_date=today,
             )
 
             if not data:
 
                 print(
-                    "No new data available."
+                    "API returned no data."
                 )
-
-                continue
-
-            if last_reference_date:
-
-                last_reference = parse_bcb_date(
-                    last_reference_date
-                )
-
-                data = [
-                    item
-                    for item in data
-                    if parse_bcb_date(item["data"])
-                    > last_reference
-                ]
-
-            if not data:
 
                 print(
-                    "No new data available."
+                    "Skipping series."
                 )
 
                 continue
+
+
+            new_data = []
+
+            for row in data:
+
+                reference_date = parse_bcb_date(
+                    row["data"]
+                )
+
+                if last_date is None:
+
+                    new_data.append(row)
+
+                elif reference_date > last_date:
+
+                    new_data.append(row)
+
+
+            if not new_data:
+
+                print(
+                    "No new data found."
+                )
+
+                print(
+                    "Skipping series."
+                )
+
+                continue
+
+            print(
+                f"New rows: {len(new_data)}"
+            )
+
 
             save_raw(
-                data=data,
+                data=new_data,
                 series_name=series_name,
-                ingestion_date=ingestion_date
+                ingestion_date=ingestion_date,
+                batch_id=batch_id,
             )
 
-            last_date = max(
-                parse_bcb_date(item["data"])
-                for item in data
+            print(
+                "Bronze saved successfully."
             )
 
-            last_date = format_bcb_date(
-                last_date
+
+            latest_date = max(
+                parse_bcb_date(
+                    row["data"]
+                )
+                for row in new_data
             )
+
 
             update_state(
                 series_name=series_name,
-                last_reference_date=last_date,
+                last_reference_date=latest_date.strftime("%d/%m/%Y"),
                 ingestion_date=ingestion_date,
-                rows_ingested=len(data)
+                rows_ingested=len(new_data),
             )
 
-            print(
-                f"Rows ingested: {len(data)}"
-            )
 
             print(
-                f"Last reference saved: {last_date}"
-            )
-
-            print(
-                "Series completed."
+                f"State updated to: {latest_date}"
             )
 
         except Exception as error:
 
             print(
-                f"Error ingesting {series_name}: {error}"
+                f"Error processing "
+                f"{series_name}: {error}"
             )
 
             failed_series.append(
                 series_name
             )
+
 
     if failed_series:
 
@@ -224,11 +274,28 @@ def ingest():
             + ", ".join(failed_series)
         )
 
-    return ingestion_date
+    print("")
+    print("=" * 60)
+    print("Ingestion completed successfully.")
+    print(f"Batch ID: {batch_id}")
+    print("=" * 60)
 
 
 if __name__ == "__main__":
 
-    ingestion_date = ingest()
+    if len(sys.argv) != 3:
 
-    print(ingestion_date)
+        raise ValueError(
+            "Usage: "
+            "ingestion_pipeline.py "
+            "<ingestion_date> "
+            "<batch_id>"
+        )
+
+    ingestion_date = sys.argv[1]
+    batch_id = sys.argv[2]
+
+    ingest(
+        ingestion_date=ingestion_date,
+        batch_id=batch_id,
+    )
