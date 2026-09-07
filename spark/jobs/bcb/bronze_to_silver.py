@@ -1,47 +1,68 @@
+import sys
+
 from pyspark.sql import functions as F
 
+from utils.spark_session import create_spark_session
 from config.bcb_series import BCB_SERIES
 from config.storage import BRONZE_BUCKET, SILVER_BUCKET
-from utils.spark_session import create_spark_session
 
 
-def transform_series(spark, series_name: str):
+def transform_series(
+    spark,
+    series_name: str,
+    ingestion_date: str
+):
 
-    bronze_path = f"s3a://{BRONZE_BUCKET}/{series_name}"
-    silver_path = f"s3a://{SILVER_BUCKET}/{series_name}"
+    bronze_path = (
+        f"s3a://{BRONZE_BUCKET}/"
+        f"{series_name}/"
+        f"ingestion_date={ingestion_date}/"
+        f"response.json"
+    )
 
-    series_config = BCB_SERIES[series_name]
-    unit = series_config["unit"]
+    silver_path = (
+        f"s3a://{SILVER_BUCKET}/"
+        f"{series_name}"
+    )
 
     print("")
     print("=" * 60)
-    print(f"Start Silver transformation: {series_name}")
+    print(f"Start Bronze -> Silver: {series_name}")
     print(f"Bronze path: {bronze_path}")
-    print(f"Unit: {unit}")
     print("=" * 60)
 
-    df = spark.read.parquet(bronze_path)
+    df = (
+        spark.read
+        .option("multiLine", "true")
+        .json(bronze_path)
+    )
 
     df = (
         df
-        .select(
+        .withColumn(
             "data",
+            F.to_date(
+                F.col("data"),
+                "dd/MM/yyyy"
+            )
+        )
+        .withColumn(
             "valor",
+            F.col("valor").cast("double")
+        )
+        .withColumn(
             "ingestion_timestamp",
-            "ingestion_date"
+            F.current_timestamp()
         )
-        .filter(F.col("data").isNotNull())
-        .filter(F.col("valor").isNotNull())
-        .dropDuplicates(["data"])
-        .orderBy("data")
+        .withColumn(
+            "year",
+            F.year("data")
+        )
+        .withColumn(
+            "month",
+            F.month("data")
+        )
     )
-
-    if unit == "BRL_MILLIONS":
-
-        df = df.withColumn(
-            "valor",
-            F.col("valor") * 1_000_000
-        )
 
     print("Silver schema:")
     df.printSchema()
@@ -51,15 +72,29 @@ def transform_series(spark, series_name: str):
     (
         df.write
         .mode("overwrite")
+        .partitionBy(
+            "year",
+            "month"
+        )
         .parquet(silver_path)
     )
 
-    print(f"Silver saved: s3://{SILVER_BUCKET}/{series_name}")
+    print(
+        f"Silver saved: s3://{SILVER_BUCKET}/{series_name}"
+    )
 
 
 def main():
 
+    if len(sys.argv) != 2:
+        raise ValueError(
+            "Usage: bronze_to_silver.py <ingestion_date>"
+        )
+
+    ingestion_date = sys.argv[1]
+
     spark = create_spark_session()
+
     spark.sparkContext.setLogLevel("WARN")
 
     failed_series = []
@@ -67,9 +102,11 @@ def main():
     for series_name in BCB_SERIES:
 
         try:
+
             transform_series(
-                spark,
-                series_name
+                spark=spark,
+                series_name=series_name,
+                ingestion_date=ingestion_date
             )
 
         except Exception as error:
@@ -85,12 +122,12 @@ def main():
     if failed_series:
 
         raise RuntimeError(
-            "Silver transformation failed for: "
+            "Bronze -> Silver transformation failed for: "
             + ", ".join(failed_series)
         )
 
     print("")
-    print("Bronze to Silver completed successfully.")
+    print("Bronze -> Silver completed successfully.")
 
 
 if __name__ == "__main__":

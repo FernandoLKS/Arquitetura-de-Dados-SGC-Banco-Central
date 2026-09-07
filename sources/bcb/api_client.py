@@ -21,14 +21,12 @@ def get_series(
     response = requests.get(
         url,
         params=params,
-        timeout=30
+        timeout=60
     )
 
     if response.status_code == 404:
         return []
 
     response.raise_for_status()
-
-    return response.json()
 
     return response.json()

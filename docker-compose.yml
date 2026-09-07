@@ -22,7 +22,6 @@ services:
       /bin/sh -c "
       sleep 5;
       mc alias set local http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
-      mc mb --ignore-existing local/bcb-raw;
       mc mb --ignore-existing local/bcb-bronze;
       mc mb --ignore-existing local/bcb-silver;
       mc mb --ignore-existing local/bcb-gold;
@@ -55,5 +54,19 @@ services:
       SILVER_BUCKET: ${SILVER_BUCKET}
       GOLD_BUCKET: ${GOLD_BUCKET}
 
+  postgres:
+    image: postgres:16
+    container_name: bcb-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
 volumes:
   minio_data:
+  postgres_data:

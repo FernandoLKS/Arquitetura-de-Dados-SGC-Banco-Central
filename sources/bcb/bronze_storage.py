@@ -7,7 +7,7 @@ from config.storage import (
     MINIO_ENDPOINT,
     MINIO_ROOT_USER,
     MINIO_ROOT_PASSWORD,
-    RAW_BUCKET
+    BRONZE_BUCKET
 )
 
 def get_minio_client():
@@ -27,18 +27,18 @@ def create_bucket_if_not_exists():
     buckets = client.list_buckets()["Buckets"]
 
     exists = any(
-        bucket["Name"] == RAW_BUCKET
+        bucket["Name"] == BRONZE_BUCKET
         for bucket in buckets
     )
 
     if not exists:
 
         client.create_bucket(
-            Bucket=RAW_BUCKET
+            Bucket=BRONZE_BUCKET
         )
 
         print(
-            f"Bucket created: {RAW_BUCKET}"
+            f"Bucket created: {BRONZE_BUCKET}"
         )
 
 
@@ -71,11 +71,11 @@ def save_raw(
 
     client.upload_fileobj(
         buffer,
-        RAW_BUCKET,
+        BRONZE_BUCKET,
         key
     )
 
     print(
         f"RAW saved: "
-        f"s3://{RAW_BUCKET}/{key}"
+        f"s3://{BRONZE_BUCKET}/{key}"
     )

@@ -14,4 +14,8 @@ RUN curl -L \
     -o /opt/spark/jars/aws-java-sdk-bundle-1.12.262.jar \
     https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.262/aws-java-sdk-bundle-1.12.262.jar
 
+RUN curl -L \
+    -o /opt/spark/jars/postgresql-42.7.4.jar \
+    https://jdbc.postgresql.org/download/postgresql-42.7.4.jar
+
 USER spark

@@ -1,20 +1,84 @@
 from datetime import datetime, timezone, timedelta
+
 from .api_client import get_series
 from config.bcb_series import BCB_SERIES
-from .raw_storage import save_raw
+from .bronze_storage import save_raw
 from .ingestion_state import (
     get_last_reference_date,
     update_state
 )
 
+
 def format_bcb_date(date):
     return date.strftime("%d/%m/%Y")
+
 
 def parse_bcb_date(date_string):
     return datetime.strptime(
         date_string,
         "%d/%m/%Y"
     ).date()
+
+
+def parse_iso_date(date_string):
+    return datetime.strptime(
+        date_string,
+        "%Y-%m-%d"
+    ).date()
+
+
+def get_data(
+    series_code,
+    frequency,
+    start_date,
+    end_date
+):
+
+    data = []
+    current_start = start_date
+
+    while current_start <= end_date:
+
+        if frequency == "monthly":
+
+            current_end = min(
+                current_start + timedelta(days=1825),
+                end_date
+            )
+
+        elif frequency == "daily":
+
+            current_end = min(
+                current_start + timedelta(days=3652),
+                end_date
+            )
+
+        else:
+
+            raise ValueError(
+                f"Frequency not supported: {frequency}"
+            )
+
+        print(
+            f"Request window: "
+            f"{format_bcb_date(current_start)} -> "
+            f"{format_bcb_date(current_end)}"
+        )
+
+        chunk = get_series(
+            series_code=series_code,
+            start_date=format_bcb_date(current_start),
+            end_date=format_bcb_date(current_end)
+        )
+
+        data.extend(chunk)
+
+        current_start = (
+            current_end + timedelta(days=1)
+        )
+
+    return data
+
 
 def ingest():
 
@@ -56,8 +120,8 @@ def ingest():
 
             else:
 
-                start_date = parse_bcb_date(
-                    series_config["initial_start_date"]
+                start_date = parse_iso_date(
+                    series_config["available_from"]
                 )
 
                 print(
@@ -73,25 +137,11 @@ def ingest():
 
                 continue
 
-            end_date = today
-
-            start_date_bcb = format_bcb_date(
-                start_date
-            )
-
-            end_date_bcb = format_bcb_date(
-                end_date
-            )
-
-            print(
-                f"Request window: "
-                f"{start_date_bcb} -> {end_date_bcb}"
-            )
-
-            data = get_series(
+            data = get_data(
                 series_code=series_config["code"],
-                start_date=start_date_bcb,
-                end_date=end_date_bcb
+                frequency=series_config["frequency"],
+                start_date=start_date,
+                end_date=today
             )
 
             if not data:

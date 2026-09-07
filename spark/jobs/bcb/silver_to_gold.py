@@ -10,7 +10,8 @@ from utils.spark_session import create_spark_session
 def read_series(spark, series_name):
 
     silver_path = (
-        f"s3a://{SILVER_BUCKET}/{series_name}"
+        f"s3a://{SILVER_BUCKET}/"
+        f"{series_name}"
     )
 
     df = spark.read.parquet(silver_path)
@@ -18,7 +19,11 @@ def read_series(spark, series_name):
     return df
 
 
-def prepare_monthly_series(spark, series_name, frequency):
+def prepare_monthly_series(
+    spark,
+    series_name,
+    frequency
+):
 
     df = read_series(
         spark,
@@ -31,7 +36,10 @@ def prepare_monthly_series(spark, series_name, frequency):
             df
             .withColumn(
                 "reference_month",
-                F.date_trunc("month", F.col("data"))
+                F.date_trunc(
+                    "month",
+                    F.col("data")
+                )
             )
             .groupBy("reference_month")
             .agg(
@@ -45,7 +53,10 @@ def prepare_monthly_series(spark, series_name, frequency):
             df
             .withColumn(
                 "reference_month",
-                F.date_trunc("month", F.col("data"))
+                F.date_trunc(
+                    "month",
+                    F.col("data")
+                )
             )
             .select(
                 "reference_month",
@@ -64,7 +75,7 @@ def main():
 
     print("")
     print("=" * 60)
-    print("Starting Silver to Gold transformation")
+    print("Starting Silver -> Gold transformation")
     print("=" * 60)
 
     monthly_dataframes = []
@@ -74,13 +85,23 @@ def main():
         print("")
         print(f"Processing: {series_name}")
 
-        df = prepare_monthly_series(
-            spark,
-            series_name,
-            series_config["frequency"]
-        )
+        try:
 
-        monthly_dataframes.append(df)
+            df = prepare_monthly_series(
+                spark=spark,
+                series_name=series_name,
+                frequency=series_config["frequency"]
+            )
+
+            monthly_dataframes.append(df)
+
+        except Exception as error:
+
+            print(
+                f"Error processing {series_name}: {error}"
+            )
+
+            raise
 
     gold_df = reduce(
         lambda left, right: left.join(
@@ -100,6 +121,7 @@ def main():
     print("Gold schema:")
     gold_df.printSchema()
 
+    print("")
     print("Rows:", gold_df.count())
 
     gold_path = (
@@ -121,7 +143,7 @@ def main():
     spark.stop()
 
     print("")
-    print("Silver to Gold completed successfully.")
+    print("Silver -> Gold completed successfully.")
 
 
 if __name__ == "__main__":

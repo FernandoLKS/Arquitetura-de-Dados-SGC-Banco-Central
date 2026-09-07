@@ -1,7 +1,7 @@
 import json
 from botocore.exceptions import ClientError
-from .raw_storage import get_minio_client
-from config.storage import RAW_BUCKET
+from .bronze_storage import get_minio_client
+from config.storage import BRONZE_BUCKET
 
 
 CONTROL_PREFIX = "_control"
@@ -18,7 +18,7 @@ def get_last_reference_date(series_name: str):
     try:
 
         response = client.get_object(
-            Bucket=RAW_BUCKET,
+            Bucket=BRONZE_BUCKET,
             Key=get_state_key(series_name)
         )
 
@@ -61,7 +61,7 @@ def update_state(
     ).encode("utf-8")
 
     client.put_object(
-        Bucket=RAW_BUCKET,
+        Bucket=BRONZE_BUCKET,
         Key=get_state_key(series_name),
         Body=body,
         ContentType="application/json"
