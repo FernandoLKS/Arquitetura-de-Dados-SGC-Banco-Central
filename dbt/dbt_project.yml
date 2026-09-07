@@ -1,0 +1,22 @@
+name: bcb_analytics
+
+version: "1.0.0"
+
+profile: bcb_analytics
+
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+analysis-paths: ["analyses"]
+snapshot-paths: ["snapshots"]
+seed-paths: ["seeds"]
+
+models:
+
+  bcb_analytics:
+
+    staging:
+      +materialized: view
+
+    marts:
+      +materialized: table

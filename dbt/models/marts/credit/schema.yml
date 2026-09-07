@@ -1,0 +1,51 @@
+version: 2
+
+models:
+
+  - name: fct_credit_pf
+
+    description: >
+      Analytical mart for individual credit containing credit
+      concessions, outstanding balances, interest rates, default
+      indicators, and their monthly and annual variations.
+
+    columns:
+
+      - name: reference_date
+        description: "Reference month."
+
+      - name: credito_concedido_pf
+        description: "Credit concessions to individuals."
+
+      - name: credito_livre_pf
+        description: "Free credit concessions to individuals."
+
+      - name: saldo_credito_pessoal
+        description: "Outstanding balance of personal credit."
+
+      - name: taxa_credito_pf
+        description: "Average interest rate for individual credit operations."
+
+      - name: inadimplencia_pf
+        description: "Default rate of the individual credit portfolio."
+
+      - name: inadimplencia_credito_pessoal_pf
+        description: "Default rate of personal credit for individuals."
+
+      - name: credito_concedido_change
+        description: >
+          Absolute monthly change in credit concessions.
+
+      - name: credito_concedido_mom
+        description: >
+          Percentage change in credit concessions
+          compared with the previous month.
+
+      - name: credito_concedido_yoy
+        description: >
+          Percentage change in credit concessions
+          compared with the same month of the previous year.
+
+      - name: inadimplencia_change
+        description: >
+          Absolute monthly change in the individual default rate.

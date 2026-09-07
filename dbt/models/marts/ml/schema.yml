@@ -1,0 +1,58 @@
+version: 2
+
+models:
+
+  - name: mart_macro_credit_features
+
+    description: >
+      Analytical dataset designed for statistical and machine
+      learning models related to credit. The model combines
+      macroeconomic indicators with lagged variables to represent
+      potential delayed effects of economic conditions.
+
+    columns:
+
+      - name: reference_date
+        description: "Reference month."
+
+      - name: selic
+        description: "Monthly Selic interest rate."
+
+      - name: selic_meta
+        description: "Monthly Selic target rate."
+
+      - name: selic_lag_1
+        description: "Selic rate observed one month earlier."
+
+      - name: selic_lag_3
+        description: "Selic rate observed three months earlier."
+
+      - name: selic_lag_6
+        description: "Selic rate observed six months earlier."
+
+      - name: selic_lag_12
+        description: "Selic rate observed twelve months earlier."
+
+      - name: ipca
+        description: "Monthly IPCA inflation rate."
+
+      - name: atividade_economica
+        description: "Economic activity index."
+
+      - name: dolar_venda
+        description: "Monthly average BRL/USD selling exchange rate."
+
+      - name: credito_concedido_pf
+        description: "Credit concessions to individuals."
+
+      - name: taxa_credito_pf
+        description: "Average interest rate for individual credit operations."
+
+      - name: inadimplencia_pf
+        description: "Default rate of the individual credit portfolio."
+
+      - name: inadimplencia_lag_1
+        description: "Individual default rate observed one month earlier."
+
+      - name: inadimplencia_lag_3
+        description: "Individual default rate observed three months earlier."

@@ -1,0 +1,20 @@
+version: 2
+
+sources:
+
+  - name: gold
+    schema: gold
+
+    description: >
+      Macroeconomic data processed by Spark from the
+      Brazilian Central Bank (BCB) APIs.
+
+    tables:
+
+      - name: macro_monthly
+
+        description: >
+          Monthly consolidated table containing the macroeconomic
+          indicators used throughout the project. Series originally
+          provided at daily frequency are aggregated to monthly
+          averages by Spark before being loaded into PostgreSQL.

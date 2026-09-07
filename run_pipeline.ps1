@@ -1,7 +1,15 @@
 param(
-    [ValidateSet("all", "ingestion", "silver", "gold", "postgres")]
+    [ValidateSet(
+        "all",
+        "ingestion",
+        "silver",
+        "gold",
+        "postgres",
+        "dbt"
+    )]
     [string]$Stage = "all"
 )
+
 
 Write-Host ""
 Write-Host "============================================================"
@@ -12,22 +20,52 @@ Write-Host "Selected stage: $Stage"
 
 
 # ============================================================
-# Infrastructure
+# INFRASTRUCTURE
 # ============================================================
 
 Write-Host ""
-Write-Host "[1/5] Starting infrastructure..."
+Write-Host "[1/6] Starting infrastructure..."
 
-docker compose up -d | Out-Null
+docker compose up -d
 
 if ($LASTEXITCODE -ne 0) {
+
     Write-Host ""
     Write-Host "Infrastructure startup failed."
+
     exit 1
 }
 
-Write-Host "Infrastructure ready."
+Write-Host "Infrastructure started."
 
+
+# ============================================================
+# MINIO INITIALIZATION
+# ============================================================
+
+Write-Host ""
+Write-Host "Checking MinIO initialization..."
+
+$minioInitStatus = docker inspect minio-init `
+    --format "{{.State.Status}}"
+
+$minioInitExitCode = docker inspect minio-init `
+    --format "{{.State.ExitCode}}"
+
+if ($minioInitStatus -ne "exited" -or $minioInitExitCode -ne "0") {
+
+    Write-Host ""
+    Write-Host "MinIO initialization failed."
+
+    Write-Host ""
+    Write-Host "Container status: $minioInitStatus"
+    Write-Host "Exit code: $minioInitExitCode"
+
+    exit 1
+}
+
+Write-Host "MinIO initialization completed successfully."
+Write-Host "Buckets and users are ready."
 
 # ============================================================
 # INGESTION
@@ -36,7 +74,7 @@ Write-Host "Infrastructure ready."
 if ($Stage -eq "all" -or $Stage -eq "ingestion") {
 
     Write-Host ""
-    Write-Host "[2/5] Running BCB ingestion..."
+    Write-Host "[2/6] Running BCB ingestion..."
 
     $ingestionOutput = @(python -m sources.bcb.ingestion_pipeline)
 
@@ -69,7 +107,7 @@ if ($Stage -eq "all" -or $Stage -eq "ingestion") {
 if ($Stage -eq "all" -or $Stage -eq "silver") {
 
     Write-Host ""
-    Write-Host "[3/5] Running BRONZE -> SILVER..."
+    Write-Host "[3/6] Running BRONZE -> SILVER..."
 
     if ($Stage -eq "silver") {
 
@@ -101,7 +139,7 @@ if ($Stage -eq "all" -or $Stage -eq "silver") {
         Write-Host "Ingestion date: $ingestionDate"
     }
 
-    docker exec bcb-spark /opt/spark/bin/spark-submit `
+    docker exec spark /opt/spark/bin/spark-submit `
         --conf spark.log.level=WARN `
         /opt/spark-apps/jobs/bcb/bronze_to_silver.py `
         $ingestionDate
@@ -125,9 +163,9 @@ if ($Stage -eq "all" -or $Stage -eq "silver") {
 if ($Stage -eq "all" -or $Stage -eq "gold") {
 
     Write-Host ""
-    Write-Host "[4/5] Running SILVER -> GOLD..."
+    Write-Host "[4/6] Running SILVER -> GOLD..."
 
-    docker exec bcb-spark /opt/spark/bin/spark-submit `
+    docker exec spark /opt/spark/bin/spark-submit `
         --conf spark.log.level=WARN `
         /opt/spark-apps/jobs/bcb/silver_to_gold.py
 
@@ -150,9 +188,9 @@ if ($Stage -eq "all" -or $Stage -eq "gold") {
 if ($Stage -eq "all" -or $Stage -eq "postgres") {
 
     Write-Host ""
-    Write-Host "[5/5] Loading GOLD -> PostgreSQL..."
+    Write-Host "[5/6] Loading GOLD -> PostgreSQL..."
 
-    docker exec bcb-spark /opt/spark/bin/spark-submit `
+    docker exec spark /opt/spark/bin/spark-submit `
         --conf spark.log.level=WARN `
         /opt/spark-apps/jobs/bcb/gold_to_postgres.py
 
@@ -165,6 +203,29 @@ if ($Stage -eq "all" -or $Stage -eq "postgres") {
     }
 
     Write-Host "Gold loaded into PostgreSQL."
+}
+
+
+# ============================================================
+# DBT
+# ============================================================
+
+if ($Stage -eq "all" -or $Stage -eq "dbt") {
+
+    Write-Host ""
+    Write-Host "[6/6] Running dbt transformations..."
+
+    docker exec dbt dbt build
+
+    if ($LASTEXITCODE -ne 0) {
+
+        Write-Host ""
+        Write-Host "dbt build failed."
+
+        exit 1
+    }
+
+    Write-Host "dbt transformations completed."
 }
 
 

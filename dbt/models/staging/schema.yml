@@ -1,0 +1,62 @@
+version: 2
+
+models:
+
+  - name: stg_macro_monthly
+
+    description: >
+      Staging model containing monthly macroeconomic indicators
+      sourced from the Spark-generated gold.macro_monthly table.
+
+    columns:
+
+      - name: reference_date
+        description: "Reference month for the economic indicators."
+
+      - name: selic
+        description: "Monthly Selic interest rate."
+
+      - name: selic_meta
+        description: "Target Selic rate defined by the Brazilian Central Bank's Monetary Policy Committee."
+
+      - name: ipca
+        description: "Monthly Extended National Consumer Price Index (IPCA)."
+
+      - name: atividade_economica
+        description: "Economic activity index."
+
+      - name: atividade_agropecuaria
+        description: "Agricultural economic activity index."
+
+      - name: atividade_industria
+        description: "Industrial activity index."
+
+      - name: atividade_servicos
+        description: "Services activity index."
+
+      - name: atividade_impostos
+        description: "Taxes component of the economic activity index."
+
+      - name: dolar_compra
+        description: "Monthly average BRL/USD exchange rate for purchase."
+
+      - name: dolar_venda
+        description: "Monthly average BRL/USD exchange rate for sale."
+
+      - name: credito_concedido_pf
+        description: "Credit concessions to individuals."
+
+      - name: credito_livre_pf
+        description: "Free credit concessions to individuals."
+
+      - name: saldo_credito_pessoal
+        description: "Outstanding balance of personal credit."
+
+      - name: taxa_credito_pf
+        description: "Average interest rate for credit operations to individuals."
+
+      - name: inadimplencia_pf
+        description: "Default rate of the credit portfolio for individuals."
+
+      - name: inadimplencia_credito_pessoal_pf
+        description: "Default rate of personal credit for individuals."

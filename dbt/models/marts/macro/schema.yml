@@ -1,0 +1,128 @@
+version: 2
+
+models:
+
+  - name: fct_monetary_policy
+
+    description: >
+      Analytical mart containing monetary policy indicators,
+      including the Selic rate, its target, monthly changes,
+      and the difference between the effective rate and its target.
+
+    columns:
+
+      - name: reference_date
+        description: "Reference month."
+
+      - name: selic
+        description: "Monthly Selic interest rate."
+
+      - name: selic_meta
+        description: "Target Selic rate."
+
+      - name: selic_spread
+        description: >
+          Difference between the effective Selic rate and its target.
+          Calculated as selic minus selic_meta.
+
+      - name: selic_previous_month
+        description: "Selic rate observed in the previous month."
+
+      - name: selic_change
+        description: >
+          Absolute monthly change in the Selic rate.
+
+      - name: selic_meta_previous_month
+        description: "Selic target observed in the previous month."
+
+      - name: selic_meta_change
+        description: >
+          Absolute monthly change in the Selic target.
+
+
+  - name: fct_economic_activity
+
+    description: >
+      Analytical mart containing economic activity indicators
+      and their monthly and annual growth rates.
+
+    columns:
+
+      - name: reference_date
+        description: "Reference month."
+
+      - name: atividade_economica
+        description: "Economic activity index."
+
+      - name: atividade_agropecuaria
+        description: "Agricultural activity index."
+
+      - name: atividade_industria
+        description: "Industrial activity index."
+
+      - name: atividade_servicos
+        description: "Services activity index."
+
+      - name: atividade_impostos
+        description: "Taxes component of the economic activity index."
+
+      - name: atividade_economica_mom
+        description: >
+          Percentage change in economic activity compared
+          with the previous month.
+
+      - name: atividade_economica_yoy
+        description: >
+          Percentage change in economic activity compared
+          with the same month of the previous year.
+
+      - name: industria_yoy
+        description: >
+          Percentage change in industrial activity compared
+          with the same month of the previous year.
+
+      - name: servicos_yoy
+        description: >
+          Percentage change in services activity compared
+          with the same month of the previous year.
+
+
+  - name: fct_exchange_rate
+
+    description: >
+      Analytical mart containing BRL/USD exchange rate indicators,
+      including monthly averages, spreads, and monthly and
+      year-over-year changes.
+
+    columns:
+
+      - name: reference_date
+        description: "Reference month."
+
+      - name: dolar_compra
+        description: "Monthly average BRL/USD purchase exchange rate."
+
+      - name: dolar_venda
+        description: "Monthly average BRL/USD selling exchange rate."
+
+      - name: dolar_medio
+        description: >
+          Average between the purchase and selling exchange rates.
+
+      - name: spread_cambio
+        description: >
+          Difference between the selling and purchase exchange rates.
+
+      - name: cambio_change
+        description: >
+          Absolute monthly change in the selling exchange rate.
+
+      - name: cambio_mom
+        description: >
+          Percentage change in the selling exchange rate
+          compared with the previous month.
+
+      - name: cambio_yoy
+        description: >
+          Percentage change in the selling exchange rate
+          compared with the same month of the previous year.

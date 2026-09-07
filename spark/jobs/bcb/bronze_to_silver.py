@@ -12,7 +12,6 @@ def transform_series(
     series_name: str,
     ingestion_date: str
 ):
-
     bronze_path = (
         f"s3a://{BRONZE_BUCKET}/"
         f"{series_name}/"
@@ -29,16 +28,29 @@ def transform_series(
     print("=" * 60)
     print(f"Start Bronze -> Silver: {series_name}")
     print(f"Bronze path: {bronze_path}")
+    print(f"Silver path: {silver_path}")
     print("=" * 60)
 
-    df = (
+    # ---------------------------------------------------------
+    # 1. READ BRONZE
+    # ---------------------------------------------------------
+
+    df_new = (
         spark.read
         .option("multiLine", "true")
         .json(bronze_path)
     )
 
-    df = (
-        df
+    if df_new.rdd.isEmpty():
+        print("No data found in Bronze.")
+        return
+
+    # ---------------------------------------------------------
+    # 2. STANDARDIZE DATA TYPES
+    # ---------------------------------------------------------
+
+    df_new = (
+        df_new
         .withColumn(
             "data",
             F.to_date(
@@ -64,13 +76,95 @@ def transform_series(
         )
     )
 
-    print("Silver schema:")
-    df.printSchema()
+    # ---------------------------------------------------------
+    # 3. REMOVE DUPLICATES FROM CURRENT INGESTION
+    # ---------------------------------------------------------
 
-    print("Rows:", df.count())
+    df_new = (
+        df_new
+        .dropDuplicates(["data"])
+    )
+
+    print("New rows:", df_new.count())
+
+    # ---------------------------------------------------------
+    # 4. CHECK IF SILVER ALREADY EXISTS
+    # ---------------------------------------------------------
+
+    silver_exists = False
+
+    try:
+        spark.read.parquet(silver_path).limit(1).count()
+        silver_exists = True
+    except Exception:
+        silver_exists = False
+
+    # ---------------------------------------------------------
+    # 5. FIRST LOAD
+    # ---------------------------------------------------------
+
+    if not silver_exists:
+
+        print("Silver does not exist.")
+        print("Performing initial load.")
+
+        (
+            df_new.write
+            .mode("overwrite")
+            .partitionBy(
+                "year",
+                "month"
+            )
+            .parquet(silver_path)
+        )
+
+        print("Initial Silver load completed.")
+
+        return
+
+    # ---------------------------------------------------------
+    # 6. READ EXISTING SILVER
+    # ---------------------------------------------------------
+
+    df_existing = (
+        spark.read
+        .parquet(silver_path)
+    )
+
+    # ---------------------------------------------------------
+    # 7. REMOVE RECORDS THAT WILL BE UPDATED
+    # ---------------------------------------------------------
+
+    existing_without_new = (
+        df_existing.alias("existing")
+        .join(
+            df_new
+            .select("data")
+            .distinct()
+            .alias("new"),
+            on=F.col("existing.data") == F.col("new.data"),
+            how="left_anti"
+        )
+    )
+
+    # ---------------------------------------------------------
+    # 8. MERGE EXISTING + NEW
+    # ---------------------------------------------------------
+
+    df_final = (
+        existing_without_new
+        .unionByName(
+            df_new,
+            allowMissingColumns=True
+        )
+    )
+
+    # ---------------------------------------------------------
+    # 9. WRITE SILVER
+    # ---------------------------------------------------------
 
     (
-        df.write
+        df_final.write
         .mode("overwrite")
         .partitionBy(
             "year",
@@ -79,9 +173,8 @@ def transform_series(
         .parquet(silver_path)
     )
 
-    print(
-        f"Silver saved: s3://{SILVER_BUCKET}/{series_name}"
-    )
+    print("Silver updated successfully.")
+    print("Total rows:", df_final.count())
 
 
 def main():
@@ -127,7 +220,9 @@ def main():
         )
 
     print("")
+    print("=" * 60)
     print("Bronze -> Silver completed successfully.")
+    print("=" * 60)
 
 
 if __name__ == "__main__":
