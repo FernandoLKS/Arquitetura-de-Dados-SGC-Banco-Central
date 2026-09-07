@@ -1,62 +1,176 @@
+param(
+    [ValidateSet("all", "ingestion", "silver", "gold", "postgres")]
+    [string]$Stage = "all"
+)
+
 Write-Host ""
 Write-Host "============================================================"
 Write-Host "BCB DATA PIPELINE"
 Write-Host "============================================================"
+Write-Host ""
+Write-Host "Selected stage: $Stage"
+
+
+# ============================================================
+# Infrastructure
+# ============================================================
 
 Write-Host ""
-Write-Host "[1/4] Starting infrastructure..."
+Write-Host "[1/5] Starting infrastructure..."
 
 docker compose up -d | Out-Null
 
+if ($LASTEXITCODE -ne 0) {
+    Write-Host ""
+    Write-Host "Infrastructure startup failed."
+    exit 1
+}
+
 Write-Host "Infrastructure ready."
 
-Write-Host ""
-Write-Host "[2/4] Running BCB ingestion..."
 
-$ingestionOutput = @(python -m sources.bcb.ingestion_pipeline)
-$ingestionExitCode = $LASTEXITCODE
+# ============================================================
+# INGESTION
+# ============================================================
 
-$ingestionOutput | ForEach-Object {
-Write-Host $_
+if ($Stage -eq "all" -or $Stage -eq "ingestion") {
+
+    Write-Host ""
+    Write-Host "[2/5] Running BCB ingestion..."
+
+    $ingestionOutput = @(python -m sources.bcb.ingestion_pipeline)
+
+    $ingestionExitCode = $LASTEXITCODE
+
+    $ingestionOutput | ForEach-Object {
+        Write-Host $_
+    }
+
+    if ($ingestionExitCode -ne 0) {
+
+        Write-Host ""
+        Write-Host "BCB ingestion failed."
+
+        exit 1
+    }
+
+    $ingestionDate = $ingestionOutput[-1]
+
+    Write-Host ""
+    Write-Host "Ingestion completed."
+    Write-Host "Ingestion date: $ingestionDate"
 }
 
-if ($ingestionExitCode -ne 0) {
-Write-Host ""
-Write-Host "BCB ingestion failed."
-exit 1
+
+# ============================================================
+# BRONZE -> SILVER
+# ============================================================
+
+if ($Stage -eq "all" -or $Stage -eq "silver") {
+
+    Write-Host ""
+    Write-Host "[3/5] Running BRONZE -> SILVER..."
+
+    if ($Stage -eq "silver") {
+
+        Write-Host ""
+        Write-Host "Using latest Bronze ingestion."
+
+        $ingestionDate = Get-ChildItem `
+            -Path "." `
+            -Recurse `
+            -Directory `
+            -ErrorAction SilentlyContinue |
+            Where-Object {
+                $_.Name -match "^ingestion_date=\d{4}-\d{2}-\d{2}$"
+            } |
+            Sort-Object Name -Descending |
+            Select-Object -First 1 -ExpandProperty Name
+
+        if (-not $ingestionDate) {
+
+            Write-Host ""
+            Write-Host "Could not determine ingestion date."
+            Write-Host "Run the ingestion stage first."
+
+            exit 1
+        }
+
+        $ingestionDate = $ingestionDate -replace "ingestion_date=", ""
+
+        Write-Host "Ingestion date: $ingestionDate"
+    }
+
+    docker exec bcb-spark /opt/spark/bin/spark-submit `
+        --conf spark.log.level=WARN `
+        /opt/spark-apps/jobs/bcb/bronze_to_silver.py `
+        $ingestionDate
+
+    if ($LASTEXITCODE -ne 0) {
+
+        Write-Host ""
+        Write-Host "BRONZE -> SILVER transformation failed."
+
+        exit 1
+    }
+
+    Write-Host "Silver transformation completed."
 }
 
-$ingestionDate = $ingestionOutput[-1]
 
-Write-Host ""
-Write-Host "Ingestion completed."
-Write-Host "Ingestion date: $ingestionDate"
+# ============================================================
+# SILVER -> GOLD
+# ============================================================
 
-Write-Host ""
-Write-Host "[3/4] Running BRONZE -> SILVER..."
+if ($Stage -eq "all" -or $Stage -eq "gold") {
 
-docker exec bcb-spark /opt/spark/bin/spark-submit --conf spark.log.level=WARN /opt/spark-apps/jobs/bcb/bronze_to_silver.py $ingestionDate
+    Write-Host ""
+    Write-Host "[4/5] Running SILVER -> GOLD..."
 
-if ($LASTEXITCODE -ne 0) {
-Write-Host ""
-Write-Host "BRONZE -> SILVER transformation failed."
-exit 1
+    docker exec bcb-spark /opt/spark/bin/spark-submit `
+        --conf spark.log.level=WARN `
+        /opt/spark-apps/jobs/bcb/silver_to_gold.py
+
+    if ($LASTEXITCODE -ne 0) {
+
+        Write-Host ""
+        Write-Host "SILVER -> GOLD transformation failed."
+
+        exit 1
+    }
+
+    Write-Host "Gold transformation completed."
 }
 
-Write-Host "Silver transformation completed."
 
-Write-Host ""
-Write-Host "[4/4] Running SILVER -> GOLD..."
+# ============================================================
+# GOLD -> POSTGRESQL
+# ============================================================
 
-docker exec bcb-spark /opt/spark/bin/spark-submit --conf spark.log.level=WARN /opt/spark-apps/jobs/bcb/silver_to_gold.py
+if ($Stage -eq "all" -or $Stage -eq "postgres") {
 
-if ($LASTEXITCODE -ne 0) {
-Write-Host ""
-Write-Host "SILVER -> GOLD transformation failed."
-exit 1
+    Write-Host ""
+    Write-Host "[5/5] Loading GOLD -> PostgreSQL..."
+
+    docker exec bcb-spark /opt/spark/bin/spark-submit `
+        --conf spark.log.level=WARN `
+        /opt/spark-apps/jobs/bcb/gold_to_postgres.py
+
+    if ($LASTEXITCODE -ne 0) {
+
+        Write-Host ""
+        Write-Host "GOLD -> PostgreSQL load failed."
+
+        exit 1
+    }
+
+    Write-Host "Gold loaded into PostgreSQL."
 }
 
-Write-Host "Gold transformation completed."
+
+# ============================================================
+# SUCCESS
+# ============================================================
 
 Write-Host ""
 Write-Host "============================================================"

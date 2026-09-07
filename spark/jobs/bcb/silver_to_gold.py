@@ -8,18 +8,15 @@ from utils.spark_session import create_spark_session
 
 
 def read_series(spark, series_name):
-
     silver_path = (
         f"s3a://{SILVER_BUCKET}/"
         f"{series_name}"
     )
 
-    df = spark.read.parquet(silver_path)
-
-    return df
+    return spark.read.parquet(silver_path)
 
 
-def prepare_monthly_series(
+def prepare_series(
     spark,
     series_name,
     frequency
@@ -30,20 +27,40 @@ def prepare_monthly_series(
         series_name
     )
 
+    print(f"Processing: {series_name}")
+
+    df = (
+        df
+        .withColumn(
+            "reference_month",
+            F.date_trunc(
+                "month",
+                F.col("data")
+            )
+        )
+        .select(
+            "reference_month",
+            "valor"
+        )
+        .withColumn(
+            "series_name",
+            F.lit(series_name)
+        )
+    )
+
+    # Guarantee one observation per month.
+    # Daily series use monthly average.
+    # Monthly series use the available monthly value.
     if frequency == "daily":
 
         df = (
             df
-            .withColumn(
+            .groupBy(
                 "reference_month",
-                F.date_trunc(
-                    "month",
-                    F.col("data")
-                )
+                "series_name"
             )
-            .groupBy("reference_month")
             .agg(
-                F.avg("valor").alias(series_name)
+                F.avg("valor").alias("valor")
             )
         )
 
@@ -51,16 +68,12 @@ def prepare_monthly_series(
 
         df = (
             df
-            .withColumn(
+            .groupBy(
                 "reference_month",
-                F.date_trunc(
-                    "month",
-                    F.col("data")
-                )
+                "series_name"
             )
-            .select(
-                "reference_month",
-                F.col("valor").alias(series_name)
+            .agg(
+                F.first("valor", ignorenulls=True).alias("valor")
             )
         )
 
@@ -78,42 +91,46 @@ def main():
     print("Starting Silver -> Gold transformation")
     print("=" * 60)
 
-    monthly_dataframes = []
+    series_dataframes = []
 
     for series_name, series_config in BCB_SERIES.items():
 
-        print("")
-        print(f"Processing: {series_name}")
+        df = prepare_series(
+            spark=spark,
+            series_name=series_name,
+            frequency=series_config["frequency"]
+        )
 
-        try:
+        series_dataframes.append(df)
 
-            df = prepare_monthly_series(
-                spark=spark,
-                series_name=series_name,
-                frequency=series_config["frequency"]
-            )
+    print("")
+    print("Combining series...")
 
-            monthly_dataframes.append(df)
-
-        except Exception as error:
-
-            print(
-                f"Error processing {series_name}: {error}"
-            )
-
-            raise
-
-    gold_df = reduce(
-        lambda left, right: left.join(
-            right,
-            on="reference_month",
-            how="outer"
-        ),
-        monthly_dataframes
+    combined_df = reduce(
+        lambda left, right: left.unionByName(right),
+        series_dataframes
     )
 
+    print("")
+    print("Long format:")
+    combined_df.printSchema()
+
+    print("")
+    print("Rows before pivot:", combined_df.count())
+
+    print("")
+    print("Creating monthly Gold table...")
+
     gold_df = (
-        gold_df
+        combined_df
+        .groupBy("reference_month")
+        .pivot("series_name")
+        .agg(
+            F.first(
+                "valor",
+                ignorenulls=True
+            )
+        )
         .orderBy("reference_month")
     )
 
@@ -122,10 +139,11 @@ def main():
     gold_df.printSchema()
 
     print("")
-    print("Rows:", gold_df.count())
+    print("Gold rows:", gold_df.count())
 
     gold_path = (
-        f"s3a://{GOLD_BUCKET}/macro_monthly"
+        f"s3a://{GOLD_BUCKET}/"
+        f"macro_monthly"
     )
 
     (
