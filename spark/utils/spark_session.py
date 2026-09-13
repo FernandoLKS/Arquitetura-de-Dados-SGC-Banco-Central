@@ -12,6 +12,7 @@ def create_spark_session():
     return (
         SparkSession.builder
         .appName("BCB-Data-Pipeline")
+
         .config(
             "spark.hadoop.fs.s3a.endpoint",
             f"http://{minio_endpoint}"
@@ -32,9 +33,20 @@ def create_spark_session():
             "spark.hadoop.fs.s3a.impl",
             "org.apache.hadoop.fs.s3a.S3AFileSystem"
         )
+
+        .config(
+            "spark.sql.extensions",
+            "io.delta.sql.DeltaSparkSessionExtension"
+        )
+        .config(
+            "spark.sql.catalog.spark_catalog",
+            "org.apache.spark.sql.delta.catalog.DeltaCatalog"
+        )
+
         .config(
             "spark.log.level",
             "WARN"
         )
+
         .getOrCreate()
     )

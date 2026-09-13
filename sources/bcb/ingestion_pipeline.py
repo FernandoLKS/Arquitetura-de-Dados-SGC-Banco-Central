@@ -101,7 +101,7 @@ def ingest(
 
     pending_states = []
 
-    batch_series = []
+    batch_series_status = {}
 
     print("")
     print("=" * 60)
@@ -253,9 +253,9 @@ def ingest(
                         }
                     )
 
-                    batch_series.append(
+                    batch_series_status[
                         series_name
-                    )
+                    ] = "new_data"
 
                 else:
 
@@ -295,9 +295,9 @@ def ingest(
                             }
                         )
 
-                        batch_series.append(
+                        batch_series_status[
                             series_name
-                        )
+                        ] = "no_data"
 
                     else:
 
@@ -362,7 +362,7 @@ def ingest(
         commit_batch(
             ingestion_date=ingestion_date,
             batch_id=batch_id,
-            series_names=batch_series,
+            series_status=batch_series_status,
         )
 
         print("")

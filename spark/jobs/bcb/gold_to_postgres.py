@@ -140,9 +140,8 @@ def load_gold_to_postgres(
 
     gold_df = (
         spark.read
-        .parquet(
-            gold_path
-        )
+        .format("delta")
+        .load(gold_path)
     )
 
     if gold_df.rdd.isEmpty():

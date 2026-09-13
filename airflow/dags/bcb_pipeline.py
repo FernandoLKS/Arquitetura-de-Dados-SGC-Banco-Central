@@ -6,7 +6,7 @@ from airflow.operators.bash import BashOperator
 
 default_args = {
     "retries": 2,
-    "retry_delay": timedelta(minutes=5),
+    "retry_delay": timedelta(minutes=1),
 }
 
 
@@ -14,7 +14,8 @@ with DAG(
     dag_id="bcb_pipeline",
     start_date=datetime(2026, 1, 1),
     schedule="@monthly",
-    catchup=True,
+    catchup=False,
+    max_active_runs=1,
     default_args=default_args,
     tags=["bcb"],
 ) as dag:

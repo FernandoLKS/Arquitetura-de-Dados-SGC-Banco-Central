@@ -142,7 +142,7 @@ def copy_previous_batch(
 def commit_batch(
     ingestion_date: str,
     batch_id: str,
-    series_names: list,
+    series_status: dict,
 ):
 
     client = get_minio_client()
@@ -217,7 +217,7 @@ def commit_batch(
     manifest = {
         "batch_id": batch_id,
         "ingestion_date": ingestion_date,
-        "series": series_names,
+        "series": series_status,
         "status": "committed",
     }
 

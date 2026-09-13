@@ -1,41 +1,77 @@
 # BCB Data Pipeline
 
-Pipeline de dados desenvolvido utilizando séries históricas do **Banco Central do Brasil (BCB)**, com foco em ingestão incremental, processamento distribuído, armazenamento em Data Lake e construção de uma camada analítica.
+Pipeline de Engenharia de Dados desenvolvido a partir de séries históricas do **Banco Central do Brasil (BCB)**.
+
+O projeto implementa uma arquitetura de **Data Lake + Data Warehouse**, com foco em ingestão incremental, controle de estado, processamento distribuído, rastreabilidade, consistência dos batches e preparação dos dados para consumo analítico.
+
+O objetivo é aplicar, em um projeto completo, conceitos utilizados na construção de pipelines de dados modernos, incluindo **watermark, processamento incremental, staging, controle de batches, reprocessamento e separação entre camadas de armazenamento e consumo**.
+
+---
 
 ## Arquitetura
 
-O projeto utiliza uma arquitetura baseada em **Data Lake + Data Warehouse**, organizada em camadas:
-
-**BCB API → Airflow → Python → MinIO (Bronze/Silver/Gold) → PostgreSQL → dbt**
-
-A ingestão foi estruturada para garantir **processamento incremental, consistência dos batches e publicação atômica dos dados**.
+```mermaid
+flowchart LR
+    A[BCB API] --> B[Airflow]
+    B --> C[Python<br/>Ingestion]
+    C --> D[MinIO<br/>Bronze]
+    D --> E[Spark + Delta Lake<br/>Silver]
+    E --> F[Spark<br/>Gold]
+    F --> G[PostgreSQL<br/>Data Warehouse]
+    G --> H[dbt<br/>Analytics]
+```
 
 ### Tecnologias
 
-| Tecnologia | Função                                |
-| ---------- | ------------------------------------- |
-| Python     | Ingestão dos dados da API             |
-| Airflow    | Orquestração do pipeline              |
-| Spark      | Processamento e transformação         |
-| MinIO      | Data Lake                             |
-| Parquet    | Armazenamento das camadas processadas |
-| PostgreSQL | Data Warehouse                        |
-| dbt        | Transformações e modelagem            |
-| Docker     | Containerização                       |
+| Tecnologia     | Responsabilidade                      |
+| -------------- | ------------------------------------- |
+| Python         | Ingestão e controle do pipeline       |
+| Apache Airflow | Orquestração                          |
+| Apache Spark   | Processamento e transformação         |
+| Delta Lake     | Cargas incrementais na Silver         |
+| MinIO          | Data Lake compatível com S3           |
+| Parquet        | Armazenamento das camadas processadas |
+| PostgreSQL     | Data Warehouse                        |
+| dbt            | Transformações, testes e documentação |
+| Docker Compose | Containerização da infraestrutura     |
 
-## Camadas
+---
 
-### Bronze
+# Fluxo de dados
 
-A Bronze armazena os dados recebidos diretamente da API do BCB em formato JSON.
+O pipeline é executado seguindo as seguintes etapas:
 
-Os dados são organizados por:
+```mermaid
+flowchart TD
+    A[BCB API] --> B[Ingestão Incremental]
+    B --> C[Bronze Staging]
+    C --> D[Validação]
+    D --> E[Publicação Bronze]
+    E --> F[Commit Marker]
+    F --> G[Manifest]
+    G --> H[Bronze → Silver]
+    H --> I[Silver Delta]
+    I --> J[Silver → Gold]
+    J --> K[Gold]
+    K --> L[PostgreSQL]
+    L --> M[dbt]
+```
+
+A ingestão da API é incremental, mas cada batch publicado na Bronze representa um **snapshot completo das séries**.
+
+---
+
+# Bronze
+
+A Bronze armazena os dados recebidos diretamente da API do Banco Central em formato JSON.
+
+Os objetos são organizados por:
 
 * Série;
 * Data de ingestão;
 * `batch_id`.
 
-Exemplo:
+Estrutura:
 
 ```text
 <series>/
@@ -46,7 +82,11 @@ Exemplo:
 
 O `batch_id` identifica a execução responsável pela geração daquele lote.
 
-A Bronze utiliza uma área de **staging** antes da publicação definitiva:
+---
+
+## Staging
+
+Antes da publicação definitiva, os dados são armazenados em uma área temporária:
 
 ```text
 _staging/
@@ -56,73 +96,19 @@ _staging/
             └── response.json
 ```
 
-Durante a ingestão, os dados são primeiro construídos nessa área temporária. Somente após todas as séries serem processadas com sucesso o batch é publicado na Bronze.
+O batch permanece em staging durante todo o processo de ingestão.
 
-Além disso, cada batch possui um **commit marker**:
+Somente após todas as séries serem processadas com sucesso os dados são publicados na Bronze.
 
-```text
-_control/
-└── batches/
-    └── ingestion_date=YYYY-MM-DD/
-        └── batch_id=<batch_id>.json
-```
+Isso evita a publicação de um snapshot parcialmente processado.
 
-Esse marcador identifica que o batch foi completamente processado e está disponível para as etapas seguintes.
+---
 
-Dessa forma, batches incompletos ou que apresentaram falha durante a ingestão não são considerados pela camada Silver.
+# Ingestão incremental
 
-### Silver
+A ingestão utiliza uma **watermark baseada na data de referência de cada série do BCB**.
 
-A Silver é responsável pelo tratamento e estruturação dos dados utilizando **Apache Spark**.
-
-Os dados são armazenados em Parquet e particionados por ano e mês.
-
-Principais operações:
-
-* Conversão de tipos;
-* Tratamento de datas;
-* Padronização dos registros;
-* Remoção de duplicidades;
-* Controle de registros já existentes;
-* Carga incremental em modo append.
-
-O processamento também verifica os registros que já existem na Silver, evitando a inserção de observações duplicadas.
-
-### Gold
-
-A Gold é destinada ao consumo analítico.
-
-Os indicadores são consolidados em nível mensal e armazenados em Parquet, particionados por mês de referência.
-
-Essa camada concentra os dados preparados para análises e consumo pelo Data Warehouse.
-
-### PostgreSQL
-
-Os dados consolidados da Gold são carregados no PostgreSQL, formando a camada de **Data Warehouse**.
-
-A principal tabela analítica é:
-
-```text
-gold.macro_monthly
-```
-
-### dbt
-
-O dbt é utilizado para realizar as transformações finais dentro do PostgreSQL.
-
-A camada permite:
-
-* Criação de modelos analíticos;
-* Transformações SQL;
-* Testes de qualidade;
-* Documentação;
-* Organização das dependências entre modelos.
-
-## Ingestão Incremental
-
-A ingestão utiliza uma **watermark baseada na data de referência do BCB**.
-
-Cada série possui um estado de controle armazenado na Bronze:
+O estado de cada série é mantido na Bronze:
 
 ```text
 _control/
@@ -131,117 +117,301 @@ _control/
 
 Esse estado mantém informações como:
 
-* Última data de referência processada;
-* Última data de ingestão;
+* última data de referência processada;
+* última data de ingestão;
 * `batch_id` do último batch publicado;
-* Quantidade de registros processados.
+* quantidade de registros processados.
 
-Nas execuções seguintes, a pipeline consulta a API a partir da última referência conhecida e considera somente observações posteriores à watermark.
+Durante uma nova execução:
 
-### Snapshot completo por batch
-
-Embora a consulta à API seja incremental, cada batch publicado na Bronze representa um **snapshot completo de todas as séries**.
-
-Quando uma série possui novos registros:
-
-```text
-API
- ↓
-Novos registros
- ↓
-Staging
- ↓
-Novo snapshot Bronze
+```mermaid
+flowchart LR
+    A[Estado da série] --> B[Última referência]
+    B --> C[Consulta incremental à API]
+    C --> D[Novos registros]
+    D --> E[Staging]
 ```
 
-Quando uma série não possui novos registros, o pipeline reutiliza fisicamente o conteúdo do último batch publicado:
+A API não precisa ser consultada novamente desde o início do histórico.
 
-```text
-Último batch Bronze
- ↓
-Copy
- ↓
-Novo staging
- ↓
-Novo snapshot Bronze
+A pipeline utiliza a última referência conhecida para determinar quais observações precisam ser incorporadas ao novo batch.
+
+---
+
+# Snapshot completo por batch
+
+Embora a consulta à API seja incremental, cada batch publicado na Bronze representa uma **visão completa das séries**.
+
+Quando uma série possui novos registros, esses registros são obtidos da API e gravados no staging.
+
+Quando uma série não possui novos registros, o pipeline reutiliza fisicamente o conteúdo do último batch publicado.
+
+```mermaid
+flowchart TD
+    A{Série possui novos dados?}
+    A -->|Sim| B[Consultar API]
+    B --> C[Novos registros]
+    C --> D[Staging]
+    A -->|Não| E[Último snapshot Bronze]
+    E --> F[Copy]
+    F --> D
 ```
 
-Isso garante que cada batch possua uma visão completa e consistente das séries, mesmo quando apenas parte delas recebeu novas observações.
+Essa estratégia permite que cada batch seja autocontido, facilitando:
 
-## Consistência e Publicação Atômica
+* auditoria;
+* rastreabilidade;
+* reconstrução de estados;
+* reprocessamento;
+* investigação de problemas.
 
-A ingestão utiliza um processo de **staging → commit**.
+---
 
-O fluxo é:
+# Manifest do batch
+
+Cada batch possui um manifest de controle contendo o status de cada série.
+
+O manifest é armazenado em:
 
 ```text
-1. Consultar todas as séries
-        ↓
-2. Criar o batch em _staging
-        ↓
-3. Validar o processamento
-        ↓
-4. Publicar os objetos na Bronze
-        ↓
-5. Criar o commit marker
-        ↓
-6. Atualizar o estado das séries
+_control/
+└── batches/
+    └── ingestion_date=YYYY-MM-DD/
+        └── batch_id=<batch_id>.json
 ```
+
+Exemplo:
+
+```json
+{
+  "batch_id": "scheduled__2026-09-13",
+  "ingestion_date": "2026-09-13",
+  "series": {
+    "selic": "new_data",
+    "ipca": "no_data",
+    "dolar_venda": "no_data",
+    ...
+  },
+  "status": "committed"
+}
+```
+
+Os possíveis estados de uma série são:
+
+| Status     | Significado                           |
+| ---------- | ------------------------------------- |
+| `new_data` | A série recebeu novos registros       |
+| `no_data`  | Não foram encontrados novos registros |
+
+O manifest permite que as etapas seguintes saibam exatamente quais séries foram alteradas naquela execução.
+
+---
+
+# Processamento seletivo
+
+A etapa **Bronze → Silver** utiliza o manifest para processar somente as séries que receberam novos dados.
+
+```mermaid
+flowchart TD
+    A[Batch Manifest] --> B{Status da série}
+    B -->|new_data| C[Processar no Spark]
+    B -->|no_data| D[Não processar]
+    C --> E[Silver Delta]
+```
+
+Por exemplo:
+
+```text
+selic              → new_data
+ipca               → no_data
+dolar_venda        → no_data
+credito_livre_pf   → new_data
+```
+
+Nesse caso, o Spark processará somente:
+
+```text
+selic
+credito_livre_pf
+```
+
+Séries sem alteração não precisam ser novamente lidas e processadas.
+
+Isso reduz:
+
+* leituras no Data Lake;
+* processamento desnecessário;
+* tempo de execução;
+* custo computacional.
+
+---
+
+# Consistência e publicação
+
+A publicação da Bronze utiliza o padrão:
+
+```mermaid
+flowchart TD
+    A[Consultar séries] --> B[Construir staging]
+    B --> C{Todas processadas?}
+    C -->|Não| D[Descartar staging]
+    C -->|Sim| E[Publicar Bronze]
+    E --> F[Criar commit marker]
+    F --> G[Atualizar estado]
+```
+
+O **commit marker** funciona como indicador de que o batch foi completamente publicado.
+
+A camada Silver só processa batches que possuem um commit válido.
+
+---
+
+## Falha durante a ingestão
 
 Caso qualquer série apresente erro:
 
-```text
-Falha na ingestão
-        ↓
-Batch não é publicado
-        ↓
-Commit marker não é criado
-        ↓
-Estado não é atualizado
-        ↓
-Staging é removido
+```mermaid
+flowchart TD
+    A[Falha na ingestão] --> B[Batch não publicado]
+    B --> C[Commit marker não criado]
+    C --> D[Estado não atualizado]
+    D --> E[Staging removido]
 ```
 
-Assim, uma falha em uma única série não resulta na publicação de um batch parcial.
+Dessa forma, uma falha em uma única série não resulta na publicação de um batch parcial.
 
-A camada Silver só processa batches que possuem um **commit marker válido**, evitando que dados incompletos sejam propagados para as etapas seguintes.
+---
 
-## Reprocessamento
+# Reprocessamento
 
-A arquitetura também permite reprocessar uma execução que falhou sem depender de um batch parcialmente publicado.
+A arquitetura permite reprocessar execuções que apresentaram falha sem depender de um batch parcialmente publicado.
 
-Como o estado só é atualizado após o commit do batch, uma execução com falha não altera a watermark da série.
+O estado da ingestão só é atualizado após a publicação bem-sucedida.
 
-Isso permite que uma nova execução:
-
-* Reutilize o último estado válido;
-* Consulte novamente apenas os dados necessários;
-* Reconstrua o snapshot completo;
-* Publique o batch somente após todas as séries serem processadas com sucesso.
-
-## Orquestração
-
-O pipeline é executado pelo **Apache Airflow**, seguindo as seguintes etapas:
+Assim, em caso de falha:
 
 ```text
-Ingestion
-    ↓
-Bronze → Silver
-    ↓
-Silver → Gold
-    ↓
-Gold → PostgreSQL
-    ↓
-dbt
+Último estado válido
+        ↓
+Nova execução
+        ↓
+Nova consulta incremental
+        ↓
+Novo staging
+        ↓
+Validação
+        ↓
+Publicação
 ```
 
-Cada execução do Airflow possui um `batch_id`, permitindo rastrear os dados desde a ingestão até as camadas analíticas.
+A execução com erro não avança a watermark.
 
-## Infraestrutura
+Isso permite que o pipeline seja reexecutado utilizando o último estado conhecido como referência.
 
-Todo o ambiente é executado utilizando **Docker Compose**, permitindo executar os principais componentes do projeto de forma isolada e reproduzível.
+---
 
-Os principais serviços são:
+# Silver
+
+A Silver é responsável pelo tratamento e estruturação dos dados utilizando **Apache Spark** e **Delta Lake**.
+
+Principais operações:
+
+* conversão de tipos;
+* tratamento de datas;
+* padronização dos registros;
+* remoção de duplicidades;
+* controle de registros existentes;
+* processamento incremental;
+* atualização utilizando `MERGE`.
+
+Os dados são particionados por ano e mês.
+
+O Delta Lake é utilizado para manter uma camada com suporte a operações incrementais e controle dos registros já existentes.
+
+---
+
+# Gold
+
+A Gold é destinada ao consumo analítico.
+
+Os dados da Silver são consolidados em nível mensal, permitindo combinar diferentes séries econômicas e de crédito em uma estrutura analítica.
+
+O processo inclui:
+
+* agregação mensal;
+* padronização das referências temporais;
+* combinação das séries;
+* transformação para formato analítico;
+* organização por mês de referência.
+
+Entre os indicadores utilizados estão:
+
+* Selic;
+* inflação;
+* câmbio;
+* concessão de crédito;
+* inadimplência;
+* atividade econômica;
+* endividamento;
+* comprometimento de renda.
+
+A Gold é uma camada derivada da Silver e pode ser reconstruída a partir dos dados tratados.
+
+---
+
+# PostgreSQL
+
+Os dados consolidados da Gold são carregados no PostgreSQL, formando a camada de **Data Warehouse**.
+
+Principal tabela analítica:
+
+```text
+gold.macro_monthly
+```
+
+O PostgreSQL funciona como camada de consumo estruturado para análises e transformações posteriores.
+
+---
+
+# dbt
+
+O dbt é utilizado para realizar as transformações finais dentro do Data Warehouse.
+
+Responsabilidades:
+
+* criação de modelos analíticos;
+* transformações SQL;
+* testes de qualidade;
+* documentação;
+* organização das dependências entre modelos.
+
+A estrutura utiliza camadas de staging e marts para separar dados intermediários dos modelos destinados ao consumo.
+
+---
+
+# Orquestração
+
+O pipeline é orquestrado pelo **Apache Airflow**.
+
+Fluxo principal:
+
+```mermaid
+flowchart LR
+    A[Ingestion] --> B[Bronze → Silver]
+    B --> C[Silver → Gold]
+    C --> D[Gold → PostgreSQL]
+    D --> E[dbt]
+```
+
+Cada execução possui um `batch_id`, permitindo rastrear a execução responsável pelos dados ao longo das diferentes camadas.
+
+---
+
+# Infraestrutura
+
+Todo o ambiente é executado utilizando **Docker Compose**, permitindo executar os principais componentes de forma isolada e reproduzível.
+
+Principais serviços:
 
 * Airflow;
 * Python / Ingestion;
@@ -250,23 +420,40 @@ Os principais serviços são:
 * PostgreSQL;
 * dbt.
 
-## Objetivo
+A infraestrutura local reproduz o fluxo completo de ingestão, processamento e disponibilização dos dados.
 
-O projeto tem como objetivo aplicar conceitos de **Engenharia de Dados** em um pipeline completo, incluindo:
+---
 
-* Ingestão de APIs;
-* Ingestão incremental;
-* Watermark;
-* Controle de estado;
-* Batches e rastreabilidade;
-* Staging e publicação atômica;
-* Data Lake;
-* Arquitetura Bronze, Silver e Gold;
-* Processamento com Spark;
-* Particionamento;
-* Orquestração com Airflow;
-* Data Warehouse;
-* Transformações com dbt;
-* Controle de duplicidades;
-* Reprocessamento seguro;
-* Containerização com Docker.
+# Decisões arquiteturais
+
+## Watermark por série
+
+Cada série possui seu próprio estado de ingestão.
+
+Isso permite que séries com diferentes frequências e datas de atualização sejam processadas de forma independente.
+
+## Snapshot completo por batch
+
+Mesmo com ingestão incremental, cada batch publicado representa uma visão completa das séries.
+
+Isso facilita auditoria, rastreabilidade e reconstrução.
+
+## Staging + Commit Marker
+
+A utilização de staging evita que dados incompletos sejam publicados.
+
+O commit marker sinaliza que o batch está pronto para consumo.
+
+## Manifest por batch
+
+O manifest registra quais séries receberam novos dados.
+
+Isso permite controlar o processamento downstream de forma granular.
+
+## Processamento seletivo
+
+O Spark processa somente as séries que possuem novos dados, evitando reprocessamento desnecessário.
+
+## Delta Lake
+
+O Delta Lake fornece suporte às operações incrementais da Silver

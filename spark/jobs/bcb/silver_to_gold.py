@@ -7,160 +7,88 @@ from config.storage import SILVER_BUCKET, GOLD_BUCKET
 from utils.spark_session import create_spark_session
 
 
-def path_exists(
-    spark,
-    path,
-):
-
-    hadoop_path = (
-        spark._jvm.org.apache.hadoop.fs.Path(path)
-    )
-
-    fs = hadoop_path.getFileSystem(
-        spark._jsc.hadoopConfiguration()
-    )
-
+def path_exists(spark, path):
+    hadoop_path = spark._jvm.org.apache.hadoop.fs.Path(path)
+    fs = hadoop_path.getFileSystem(spark._jsc.hadoopConfiguration())
     return fs.exists(hadoop_path)
 
 
-def read_series(
-    spark,
-    series_name,
-    frequency,
-    silver_path,
-):
+def read_series(spark, series_name, frequency, silver_path):
 
-    print("")
-    print("-" * 60)
-    print(f"Processing: {series_name}")
-    print(f"Frequency: {frequency}")
-    print("-" * 60)
+    print(f"Reading Silver: {series_name}")
 
-
-    if not path_exists(
-        spark,
-        silver_path,
-    ):
-
-        print(
-            "Silver data not found."
-        )
-
-        print(
-            "Skipping series."
-        )
-
+    if not path_exists(spark, silver_path):
+        print(f"Silver path not found: {silver_path}")
         return None
 
-
-    df = (
-        spark.read
-        .parquet(
-            silver_path
-        )
-    )
+    # Silver agora é Delta
+    df = spark.read.format("delta").load(silver_path)
 
     if df.rdd.isEmpty():
-
-        print(
-            "Silver is empty."
-        )
-
-        print(
-            "Skipping series."
-        )
-
+        print(f"Silver is empty: {series_name}")
         return None
-
-    print(
-        f"Silver rows: {df.count()}"
-    )
-
 
     df = (
         df
         .withColumn(
             "reference_month",
-            F.date_trunc(
-                "month",
-                F.col("data"),
-            ),
+            F.date_trunc("month", F.col("data"))
         )
-    )
-
-
-    df = (
-        df
         .select(
             "reference_month",
-            "valor",
+            "valor"
         )
         .withColumn(
             "series_name",
-            F.lit(series_name),
+            F.lit(series_name)
         )
     )
 
     if frequency == "daily":
 
-        print(
-            "Aggregation: daily -> monthly average"
-        )
-
         df = (
             df
             .groupBy(
                 "reference_month",
-                "series_name",
+                "series_name"
             )
             .agg(
-                F.avg(
-                    "valor"
-                ).alias("valor")
+                F.avg("valor").alias("valor")
             )
         )
-
 
     elif frequency == "monthly":
 
-        print(
-            "Aggregation: monthly -> monthly value"
-        )
-
         df = (
             df
             .groupBy(
                 "reference_month",
-                "series_name",
+                "series_name"
             )
             .agg(
                 F.first(
                     "valor",
-                    ignorenulls=True,
+                    ignorenulls=True
                 ).alias("valor")
             )
         )
 
     else:
-
         raise ValueError(
-            f"Frequency not supported: {frequency}"
+            f"Unsupported frequency: {frequency}"
         )
 
     return df
 
 
-def build_gold(
-    spark,
-):
+def build_gold(spark):
 
     series_dataframes = []
 
     for series_name, series_config in BCB_SERIES.items():
 
         silver_path = (
-            f"s3a://{SILVER_BUCKET}/"
-            f"{series_name}"
+            f"s3a://{SILVER_BUCKET}/{series_name}"
         )
 
         df = read_series(
@@ -171,129 +99,88 @@ def build_gold(
         )
 
         if df is not None:
-
-            series_dataframes.append(
-                df
-            )
-
+            series_dataframes.append(df)
 
     if not series_dataframes:
-
-        print(
-            "No Silver data available."
-        )
-
         return None
 
-
     combined_df = reduce(
-        lambda left, right:
-        left.unionByName(right),
-        series_dataframes,
+        lambda left, right: left.unionByName(right),
+        series_dataframes
     )
-
 
     gold_df = (
         combined_df
-        .groupBy(
-            "reference_month",
-        )
-        .pivot(
-            "series_name",
-        )
+        .groupBy("reference_month")
+        .pivot("series_name")
         .agg(
             F.first(
                 "valor",
-                ignorenulls=True,
+                ignorenulls=True
             )
         )
-        .orderBy(
-            "reference_month",
-        )
+        .orderBy("reference_month")
     )
 
     return gold_df
 
 
-def write_gold(
-    gold_df,
-    gold_path,
-):
+def write_gold(gold_df, gold_path):
 
     if gold_df is None:
-
-        print(
-            "No data available for Gold."
-        )
-
+        print("No data to write.")
         return
 
-    if gold_df.rdd.isEmpty():
-
-        print(
-            "Gold DataFrame is empty."
-        )
-
-        return
-
-
-    rows = gold_df.count()
-
-    print(
-        f"Gold rows: {rows}"
-    )
-
-    print(
-        "Overwriting Gold..."
-    )
+    print(f"Writing Gold Delta table: {gold_path}")
 
     (
-        gold_df
-        .write
+        gold_df.write
+        .format("delta")
         .mode("overwrite")
-        .partitionBy(
-            "reference_month"
-        )
-        .parquet(
-            gold_path
-        )
+        .partitionBy("reference_month")
+        .save(gold_path)
     )
 
-    print(
-        "Gold overwrite completed successfully."
-    )
+    print("Gold Delta table written successfully.")
 
 
 def main():
 
     spark = create_spark_session()
 
-    gold_path = (
-        f"s3a://{GOLD_BUCKET}/"
-        f"macro_monthly"
-    )
+    try:
 
-    print("")
-    print("=" * 60)
-    print("Starting Silver -> Gold")
-    print("=" * 60)
+        print("=" * 60)
+        print("Starting Silver -> Gold")
+        print("=" * 60)
 
+        gold_path = (
+            f"s3a://{GOLD_BUCKET}/macro_monthly"
+        )
 
-    gold_df = build_gold(
-        spark=spark,
-    )
+        gold_df = build_gold(spark)
 
-    write_gold(
-        gold_df=gold_df,
-        gold_path=gold_path,
-    )
+        if gold_df is None:
+            print("No data available to build Gold.")
+            return
 
-    spark.stop()
+        print("Gold schema:")
+        gold_df.printSchema()
 
-    print("")
-    print("=" * 60)
-    print("Silver -> Gold completed successfully.")
-    print("=" * 60)
+        print("Gold preview:")
+        gold_df.show(10, truncate=False)
+
+        write_gold(
+            gold_df=gold_df,
+            gold_path=gold_path,
+        )
+
+        print("=" * 60)
+        print("Silver -> Gold completed successfully.")
+        print("=" * 60)
+
+    finally:
+        spark.stop()
 
 
 if __name__ == "__main__":

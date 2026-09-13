@@ -1,4 +1,7 @@
+import json
 import sys
+
+from delta.tables import DeltaTable
 
 from pyspark.sql.functions import (
     col,
@@ -8,7 +11,6 @@ from pyspark.sql.functions import (
     year,
 )
 
-from config.bcb_series import BCB_SERIES
 from utils.spark_session import create_spark_session
 
 
@@ -47,6 +49,76 @@ def is_batch_committed(
         spark,
         commit_path,
     )
+
+
+def read_batch_manifest(
+    spark,
+    ingestion_date,
+    batch_id,
+):
+    manifest_path = (
+        f"s3a://{BRONZE_BUCKET}/"
+        f"_control/"
+        f"batches/"
+        f"ingestion_date={ingestion_date}/"
+        f"batch_id={batch_id}.json"
+    )
+
+    print(
+        f"Reading batch manifest: "
+        f"{manifest_path}"
+    )
+
+    hadoop_path = (
+        spark._jvm.org.apache.hadoop.fs.Path(
+            manifest_path
+        )
+    )
+
+    fs = hadoop_path.getFileSystem(
+        spark._jsc.hadoopConfiguration()
+    )
+
+    input_stream = fs.open(hadoop_path)
+
+    try:
+        content = (
+            spark._jvm.org.apache.commons.io.IOUtils
+            .toString(
+                input_stream,
+                "UTF-8",
+            )
+        )
+    finally:
+        input_stream.close()
+
+    print(
+        f"Manifest content length: "
+        f"{len(content)}"
+    )
+
+    print(
+        f"Manifest content: "
+        f"{content}"
+    )
+
+    return json.loads(content)
+
+def get_changed_series(
+    manifest,
+):
+
+    series_status = manifest.get(
+        "series",
+        {},
+    )
+
+    return [
+        series_name
+        for series_name, status in series_status.items()
+        if status == "new_data"
+    ]
+
 
 def process_series(
     spark,
@@ -142,60 +214,74 @@ def process_series(
         .dropDuplicates(["data"])
     )
 
-    if path_exists(
+    rows_to_merge = df.count()
+
+    print(
+        f"Rows to merge: {rows_to_merge}"
+    )
+
+    # Primeira execução:
+    # cria a tabela Delta
+    if not path_exists(
         spark,
         silver_path,
     ):
 
         print(
-            "Silver already exists."
+            "Silver Delta table does not exist."
         )
 
         print(
-            "Checking for existing reference dates..."
+            "Creating Delta table..."
         )
 
-        silver_df = (
-            spark.read
-            .parquet(silver_path)
-            .select("data")
-            .dropDuplicates(["data"])
-        )
-
-        df = df.join(
-            silver_df,
-            on="data",
-            how="left_anti",
-        )
-
-    if df.rdd.isEmpty():
-
-        print(
-            "All Bronze records already exist "
-            "in Silver."
+        (
+            df.write
+            .format("delta")
+            .mode("overwrite")
+            .partitionBy(
+                "year",
+                "month",
+            )
+            .save(silver_path)
         )
 
         print(
-            "Skipping series."
+            "Silver Delta table "
+            "created successfully."
         )
 
         return
 
-    rows_to_append = df.count()
+    # Tabela já existe:
+    # executa MERGE
+    print(
+        "Silver Delta table already exists."
+    )
 
     print(
-        f"Rows to append: {rows_to_append}"
+        "Executing MERGE..."
+    )
+
+    delta_table = DeltaTable.forPath(
+        spark,
+        silver_path,
     )
 
     (
-        df.write
-        .mode("append")
-        .partitionBy("year", "month")
-        .parquet(silver_path)
+        delta_table.alias("target")
+        .merge(
+            df.alias("source"),
+            "target.data = source.data",
+        )
+        .whenMatchedUpdateAll()
+        .whenNotMatchedInsertAll()
+        .execute()
     )
 
     print(
-        "Silver updated successfully."
+        "Silver Delta table "
+        "updated successfully."
     )
 
 
@@ -205,16 +291,6 @@ def main(
 ):
 
     spark = create_spark_session()
-
-    if not is_batch_committed(
-        spark,
-        ingestion_date,
-        batch_id,
-    ):
-
-        raise RuntimeError(
-            "Bronze batch is not committed."
-        )
 
     try:
 
@@ -230,6 +306,10 @@ def main(
         )
         print("=" * 60)
 
+        # --------------------------------------------------
+        # 1. Verifica se o batch foi realmente publicado
+        # --------------------------------------------------
+
         if not is_batch_committed(
             spark,
             ingestion_date,
@@ -241,9 +321,60 @@ def main(
                 "The ingestion batch is not valid."
             )
 
+        # --------------------------------------------------
+        # 2. Lê o manifesto do batch
+        # --------------------------------------------------
+
+        manifest = read_batch_manifest(
+            spark,
+            ingestion_date,
+            batch_id,
+        )
+
+        # --------------------------------------------------
+        # 3. Identifica somente as séries alteradas
+        # --------------------------------------------------
+
+        changed_series = get_changed_series(
+            manifest
+        )
+
+        print("")
+        print(
+            f"Series with new data: "
+            f"{len(changed_series)}"
+        )
+
+        for series_name in changed_series:
+
+            print(
+                f"  - {series_name}"
+            )
+
+        # --------------------------------------------------
+        # 4. Nada mudou
+        # --------------------------------------------------
+
+        if not changed_series:
+
+            print("")
+            print(
+                "No series with new data."
+            )
+
+            print(
+                "Nothing to process."
+            )
+
+            return
+
+        # --------------------------------------------------
+        # 5. Processa somente séries alteradas
+        # --------------------------------------------------
+
         failed_series = []
 
-        for series_name in BCB_SERIES:
+        for series_name in changed_series:
 
             try:
 
@@ -269,7 +400,9 @@ def main(
 
             raise RuntimeError(
                 "Bronze -> Silver failed for: "
-                + ", ".join(failed_series)
+                + ", ".join(
+                    failed_series
+                )
             )
 
         print("")
