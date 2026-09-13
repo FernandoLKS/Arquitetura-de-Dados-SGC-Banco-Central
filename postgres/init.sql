@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS gold.macro_monthly (
     dolar_venda DOUBLE PRECISION,
 
     endividamento_familias DOUBLE PRECISION,
-    endividamento_familias_sem_habitacional DOUBLE PRECISION,
+    -- endividamento_familias_sem_habitacional DOUBLE PRECISION,
 
     inadimplencia_credito_pessoal_pf DOUBLE PRECISION,
     inadimplencia_pf DOUBLE PRECISION,

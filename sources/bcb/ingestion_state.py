@@ -9,7 +9,7 @@ from config.storage import BRONZE_BUCKET
 CONTROL_PREFIX = "_control"
 
 
-def get_state_key(series_name: str) -> str:
+def get_state_key(series_name: str):
 
     return (
         f"{CONTROL_PREFIX}/"
@@ -17,7 +17,7 @@ def get_state_key(series_name: str) -> str:
     )
 
 
-def get_last_reference_date(
+def get_state(
     series_name: str
 ):
 
@@ -36,9 +36,7 @@ def get_last_reference_date(
             .decode("utf-8")
         )
 
-        return state.get(
-            "last_reference_date"
-        )
+        return state
 
     except ClientError as error:
 
@@ -47,15 +45,34 @@ def get_last_reference_date(
         )
 
         if error_code == "NoSuchKey":
+
             return None
 
         raise
+
+
+def get_last_reference_date(
+    series_name: str
+):
+
+    state = get_state(
+        series_name
+    )
+
+    if state is None:
+
+        return None
+
+    return state.get(
+        "last_reference_date"
+    )
 
 
 def update_state(
     series_name: str,
     last_reference_date: str,
     ingestion_date: str,
+    batch_id: str,
     rows_ingested: int,
 ):
 
@@ -65,6 +82,7 @@ def update_state(
         "series_name": series_name,
         "last_reference_date": last_reference_date,
         "last_ingestion_date": ingestion_date,
+        "last_batch_id": batch_id,
         "rows_ingested": rows_ingested,
     }
 

@@ -101,10 +101,6 @@ def load_gold_to_postgres(
     table_name: str,
 ):
 
-    # ---------------------------------------------------------
-    # Paths
-    # ---------------------------------------------------------
-
     gold_path = (
         f"s3a://{GOLD_BUCKET}/"
         f"{table_name}"
@@ -128,10 +124,6 @@ def load_gold_to_postgres(
     )
     print("=" * 60)
 
-    # ---------------------------------------------------------
-    # PostgreSQL configuration
-    # ---------------------------------------------------------
-
     postgres_config = get_postgres_config()
 
     jdbc_url, properties = (
@@ -139,10 +131,6 @@ def load_gold_to_postgres(
             postgres_config
         )
     )
-
-    # ---------------------------------------------------------
-    # Read Gold
-    # ---------------------------------------------------------
 
     if not gold_path:
 
@@ -173,10 +161,6 @@ def load_gold_to_postgres(
     print("Gold schema:")
     gold_df.printSchema()
 
-    # ---------------------------------------------------------
-    # Last month already loaded
-    # ---------------------------------------------------------
-
     last_postgres_month = (
         get_last_postgres_month(
             spark=spark,
@@ -191,10 +175,6 @@ def load_gold_to_postgres(
         f"Last PostgreSQL month: "
         f"{last_postgres_month}"
     )
-
-    # ---------------------------------------------------------
-    # Initial load
-    # ---------------------------------------------------------
 
     if last_postgres_month is None:
 
@@ -227,10 +207,6 @@ def load_gold_to_postgres(
 
         return
 
-    # ---------------------------------------------------------
-    # Incremental load
-    # ---------------------------------------------------------
-
     new_df = (
         gold_df
         .filter(
@@ -241,9 +217,6 @@ def load_gold_to_postgres(
         )
     )
 
-    # ---------------------------------------------------------
-    # No new months
-    # ---------------------------------------------------------
 
     if new_df.rdd.isEmpty():
 
@@ -255,9 +228,6 @@ def load_gold_to_postgres(
 
         return
 
-    # ---------------------------------------------------------
-    # Append new months
-    # ---------------------------------------------------------
 
     new_rows = new_df.count()
 

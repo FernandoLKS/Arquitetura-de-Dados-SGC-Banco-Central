@@ -29,6 +29,25 @@ def path_exists(spark, path):
     return fs.exists(hadoop_path)
 
 
+def is_batch_committed(
+    spark,
+    ingestion_date,
+    batch_id,
+):
+
+    commit_path = (
+        f"s3a://{BRONZE_BUCKET}/"
+        f"_control/"
+        f"batches/"
+        f"ingestion_date={ingestion_date}/"
+        f"batch_id={batch_id}.json"
+    )
+
+    return path_exists(
+        spark,
+        commit_path,
+    )
+
 def process_series(
     spark,
     series_name,
@@ -56,25 +75,44 @@ def process_series(
         f"{series_name}"
     )
 
-    print(f"Bronze path: {bronze_path}")
+    print(
+        f"Bronze path: {bronze_path}"
+    )
 
-    if not path_exists(spark, bronze_path):
+    if not path_exists(
+        spark,
+        bronze_path,
+    ):
 
-        print("Bronze batch not found.")
-        print("Skipping series.")
+        print(
+            "Bronze batch not found."
+        )
+
+        print(
+            "Skipping series."
+        )
 
         return
 
-    df = spark.read.json(bronze_path)
+    df = spark.read.json(
+        bronze_path
+    )
 
     if df.rdd.isEmpty():
 
-        print("Bronze batch is empty.")
-        print("Skipping series.")
+        print(
+            "Bronze batch is empty."
+        )
+
+        print(
+            "Skipping series."
+        )
 
         return
 
-    print(f"Bronze rows: {df.count()}")
+    print(
+        f"Bronze rows: {df.count()}"
+    )
 
     df = (
         df
@@ -104,10 +142,18 @@ def process_series(
         .dropDuplicates(["data"])
     )
 
-    if path_exists(spark, silver_path):
+    if path_exists(
+        spark,
+        silver_path,
+    ):
 
-        print("Silver already exists.")
-        print("Checking for existing reference dates...")
+        print(
+            "Silver already exists."
+        )
+
+        print(
+            "Checking for existing reference dates..."
+        )
 
         silver_df = (
             spark.read
@@ -129,7 +175,9 @@ def process_series(
             "in Silver."
         )
 
-        print("Skipping series.")
+        print(
+            "Skipping series."
+        )
 
         return
 
@@ -146,7 +194,9 @@ def process_series(
         .parquet(silver_path)
     )
 
-    print("Silver updated successfully.")
+    print(
+        "Silver updated successfully."
+    )
 
 
 def main(
@@ -156,51 +206,83 @@ def main(
 
     spark = create_spark_session()
 
-    failed_series = []
-
-    print("")
-    print("=" * 60)
-    print("Starting Bronze -> Silver")
-    print(f"Ingestion date: {ingestion_date}")
-    print(f"Batch ID: {batch_id}")
-    print("=" * 60)
-
-    for series_name in BCB_SERIES:
-
-        try:
-
-            process_series(
-                spark=spark,
-                series_name=series_name,
-                ingestion_date=ingestion_date,
-                batch_id=batch_id,
-            )
-
-        except Exception as error:
-
-            print(
-                f"Error processing "
-                f"{series_name}: {error}"
-            )
-
-            failed_series.append(series_name)
-
-    spark.stop()
-
-    if failed_series:
+    if not is_batch_committed(
+        spark,
+        ingestion_date,
+        batch_id,
+    ):
 
         raise RuntimeError(
-            "Bronze -> Silver failed for: "
-            + ", ".join(failed_series)
+            "Bronze batch is not committed."
         )
 
-    print("")
-    print("=" * 60)
-    print(
-        "Bronze -> Silver "
-        "completed successfully."
-    )
-    print("=" * 60)
+    try:
+
+        print("")
+        print("=" * 60)
+        print("Starting Bronze -> Silver")
+        print(
+            f"Ingestion date: "
+            f"{ingestion_date}"
+        )
+        print(
+            f"Batch ID: {batch_id}"
+        )
+        print("=" * 60)
+
+        if not is_batch_committed(
+            spark,
+            ingestion_date,
+            batch_id,
+        ):
+
+            raise RuntimeError(
+                "Bronze batch is not committed. "
+                "The ingestion batch is not valid."
+            )
+
+        failed_series = []
+
+        for series_name in BCB_SERIES:
+
+            try:
+
+                process_series(
+                    spark=spark,
+                    series_name=series_name,
+                    ingestion_date=ingestion_date,
+                    batch_id=batch_id,
+                )
+
+            except Exception as error:
+
+                print(
+                    f"Error processing "
+                    f"{series_name}: {error}"
+                )
+
+                failed_series.append(
+                    series_name
+                )
+
+        if failed_series:
+
+            raise RuntimeError(
+                "Bronze -> Silver failed for: "
+                + ", ".join(failed_series)
+            )
+
+        print("")
+        print("=" * 60)
+        print(
+            "Bronze -> Silver "
+            "completed successfully."
+        )
+        print("=" * 60)
+
+    finally:
+
+        spark.stop()
 
 
 if __name__ == "__main__":

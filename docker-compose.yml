@@ -39,9 +39,6 @@ services:
       ${MINIO_ROOT_PASSWORD};
 
       mc mb --ignore-existing
-      local/${RAW_BUCKET};
-
-      mc mb --ignore-existing
       local/${BRONZE_BUCKET};
 
       mc mb --ignore-existing
@@ -72,7 +69,7 @@ services:
     container_name: postgres
 
     ports:
-      - "5432:5432"
+      - "5433:5432"
 
     environment:
       POSTGRES_DB: ${POSTGRES_DB}

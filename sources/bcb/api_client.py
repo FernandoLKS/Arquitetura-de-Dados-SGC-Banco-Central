@@ -9,7 +9,6 @@ def get_series(
     start_date: str,
     end_date: str
 ):
-
     url = f"{BASE_URL}.{series_code}/dados"
 
     params = {
@@ -29,4 +28,15 @@ def get_series(
 
     response.raise_for_status()
 
-    return response.json()
+    try:
+        return response.json()
+
+    except ValueError as error:
+        raise RuntimeError(
+            "BCB API returned a non-JSON response. "
+            f"Series: {series_code}. "
+            f"Period: {start_date} -> {end_date}. "
+            f"Status: {response.status_code}. "
+            f"Content-Type: {response.headers.get('Content-Type')}. "
+            f"Response: {response.text[:500]!r}"
+        ) from error

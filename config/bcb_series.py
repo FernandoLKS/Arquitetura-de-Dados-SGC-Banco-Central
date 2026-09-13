@@ -195,13 +195,13 @@ BCB_SERIES = {
         "description": "Endividamento das familias."
     },
 
-    "endividamento_familias_sem_habitacional": {
-        "code": 29038,
-        "frequency": "monthly",
-        "available_from": "2005-01-01",
-        "unit": "PERCENT",
-        "description": "Endividamento das familias, exceto credito habitacional."
-    },
+    # "endividamento_familias_sem_habitacional": {
+    #     "code": 29038,
+    #     "frequency": "monthly",
+    #     "available_from": "2005-01-01",
+    #     "unit": "PERCENT",
+    #     "description": "Endividamento das familias, exceto credito habitacional."
+    # },
 
 
     # Public sector
