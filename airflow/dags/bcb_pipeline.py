@@ -1,24 +1,25 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from airflow import DAG
 from airflow.operators.bash import BashOperator
+
+
+default_args = {
+    "retries": 2,
+    "retry_delay": timedelta(minutes=5),
+}
 
 
 with DAG(
     dag_id="bcb_pipeline",
     start_date=datetime(2026, 1, 1),
     schedule="@monthly",
-    catchup=False,
+    catchup=True,
+    default_args=default_args,
     tags=["bcb"],
 ) as dag:
 
-    # ---------------------------------------------------------
-    # Identificadores da execução atual
-    # ---------------------------------------------------------
-
-    ingestion_date = (
-        "{{ macros.datetime.utcnow().strftime('%Y-%m-%d') }}"
-    )
+    ingestion_date = "{{ logical_date.strftime('%Y-%m-%d') }}"
 
     batch_id = (
         "{{ run_id "
@@ -26,10 +27,6 @@ with DAG(
         "| replace('+', '_') "
         "| replace('/', '_') }}"
     )
-
-    # ---------------------------------------------------------
-    # Ingestão
-    # ---------------------------------------------------------
 
     ingestion = BashOperator(
         task_id="ingestion",
@@ -40,14 +37,6 @@ with DAG(
             f"{batch_id}"
         ),
     )
-
-    # ---------------------------------------------------------
-    # Bronze -> Silver
-    #
-    # Recebe o MESMO batch_id da Ingestão.
-    # Portanto, lê somente o Bronze produzido
-    # pela execução atual da DAG.
-    # ---------------------------------------------------------
 
     bronze_to_silver = BashOperator(
         task_id="bronze_to_silver",
@@ -60,13 +49,6 @@ with DAG(
         ),
     )
 
-    # ---------------------------------------------------------
-    # Silver -> Gold
-    #
-    # Reconstrói toda a Gold a partir da Silver.
-    # Não precisa de ingestion_date ou batch_id.
-    # ---------------------------------------------------------
-
     silver_to_gold = BashOperator(
         task_id="silver_to_gold",
         bash_command=(
@@ -75,10 +57,6 @@ with DAG(
             "/opt/spark-apps/jobs/bcb/silver_to_gold.py"
         ),
     )
-
-    # ---------------------------------------------------------
-    # Gold -> PostgreSQL
-    # ---------------------------------------------------------
 
     gold_to_postgres = BashOperator(
         task_id="gold_to_postgres",
@@ -89,21 +67,10 @@ with DAG(
         ),
     )
 
-    # ---------------------------------------------------------
-    # dbt
-    # ---------------------------------------------------------
-
     dbt = BashOperator(
         task_id="dbt",
-        bash_command=(
-            "docker exec dbt "
-            "dbt build"
-        ),
+        bash_command="docker exec dbt dbt build",
     )
-
-    # ---------------------------------------------------------
-    # Dependências
-    # ---------------------------------------------------------
 
     ingestion >> bronze_to_silver
     bronze_to_silver >> silver_to_gold
