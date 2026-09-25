@@ -287,3 +287,131 @@ def delete_staging_batch(
         f"Staging batch deleted: "
         f"{batch_id}"
     )
+
+def commit_series(
+    series_name: str,
+    ingestion_date: str,
+    batch_id: str,
+):
+    client = get_minio_client()
+
+    staging_key = (
+        f"{STAGING_PREFIX}/"
+        f"ingestion_date={ingestion_date}/"
+        f"batch_id={batch_id}/"
+        f"{series_name}/"
+        f"response.json"
+    )
+
+    bronze_key = (
+        f"{series_name}/"
+        f"ingestion_date={ingestion_date}/"
+        f"batch_id={batch_id}/"
+        f"response.json"
+    )
+
+    try:
+
+        client.copy_object(
+            Bucket=BRONZE_BUCKET,
+            CopySource={
+                "Bucket": BRONZE_BUCKET,
+                "Key": staging_key,
+            },
+            Key=bronze_key,
+        )
+
+    except Exception as error:
+
+        raise RuntimeError(
+            f"Failed to publish Bronze data "
+            f"for series: {series_name}"
+        ) from error
+
+    print(
+        f"Bronze published: "
+        f"s3://{BRONZE_BUCKET}/{bronze_key}"
+    )
+
+def write_batch_manifest(
+    ingestion_date: str,
+    batch_id: str,
+    series_status: dict,
+    status: str,
+):
+    client = get_minio_client()
+
+    commit_key = (
+        f"{CONTROL_PREFIX}/"
+        f"batches/"
+        f"ingestion_date={ingestion_date}/"
+        f"batch_id={batch_id}.json"
+    )
+
+    manifest = {
+        "batch_id": batch_id,
+        "ingestion_date": ingestion_date,
+        "series": series_status,
+        "status": status,
+    }
+
+    body = json.dumps(
+        manifest,
+        ensure_ascii=False,
+        indent=2,
+    ).encode("utf-8")
+
+    client.put_object(
+        Bucket=BRONZE_BUCKET,
+        Key=commit_key,
+        Body=body,
+        ContentType="application/json",
+    )
+
+    print(
+        f"Batch manifest written: "
+        f"s3://{BRONZE_BUCKET}/{commit_key}"
+    )
+
+def delete_staging_series(
+    series_name: str,
+    ingestion_date: str,
+    batch_id: str,
+):
+
+    client = get_minio_client()
+
+    prefix = (
+        f"{STAGING_PREFIX}/"
+        f"ingestion_date={ingestion_date}/"
+        f"batch_id={batch_id}/"
+        f"{series_name}/"
+    )
+
+    response = client.list_objects_v2(
+        Bucket=BRONZE_BUCKET,
+        Prefix=prefix,
+    )
+
+    objects = response.get(
+        "Contents",
+        [],
+    )
+
+    if not objects:
+        return
+
+    client.delete_objects(
+        Bucket=BRONZE_BUCKET,
+        Delete={
+            "Objects": [
+                {"Key": obj["Key"]}
+                for obj in objects
+            ]
+        },
+    )
+
+    print(
+        f"Staging deleted: "
+        f"{series_name}"
+    )

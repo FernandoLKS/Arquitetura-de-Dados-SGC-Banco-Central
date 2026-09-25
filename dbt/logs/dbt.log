@@ -17527,3 +17527,1292 @@ drop table if exists "bcb"."analytics"."mart_macro_credit_features__dbt_backup" 
 [0m17:33:26.655337 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7face0474830>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7face34e3830>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7facdef47530>]}
 [0m17:33:26.655956 [debug] [MainThread]: Flushing usage events
 [0m17:33:27.366503 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m20:19:34.722657 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f4e2e5178f0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f4e2eb82690>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f4e2e841340>]}
+
+
+============================== 20:19:35.050666 | c0a132a3-9b86-4e37-87a4-e6b0df641936 ==============================
+[0m20:19:35.050666 [info ] [MainThread]: Running with dbt=1.12.5
+[0m20:19:35.051809 [debug] [MainThread]: running dbt with arguments {'profiles_dir': '/usr/app/dbt', 'write_json': 'True', 'partial_parse': 'True', 'debug': 'False', 'introspect': 'True', 'cache_selected_only': 'False', 'indirect_selection': 'eager', 'maximum_seed_size_mib': '1', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'send_anonymous_usage_stats': 'True', 'target_path': 'None', 'version_check': 'True', 'printer_width': '80', 'use_colors': 'True', 'log_format': 'default', 'invocation_command': 'dbt build', 'empty': 'False', 'hints_enabled': 'True', 'warn_error': 'None', 'log_cache_events': 'False', 'no_print': 'None', 'log_path': '/usr/app/dbt/logs', 'fail_fast': 'False', 'static_parser': 'True', 'use_experimental_parser': 'False', 'quiet': 'False'}
+[0m20:19:35.240834 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': 'c0a132a3-9b86-4e37-87a4-e6b0df641936', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f4e2c315df0>]}
+[0m20:19:35.300513 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': 'c0a132a3-9b86-4e37-87a4-e6b0df641936', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f4e30589010>]}
+[0m20:19:35.302841 [info ] [MainThread]: Registered adapter: postgres=1.11.0
+[0m20:19:35.361643 [debug] [MainThread]: checksum: 50810f2c0e4e5ec97f45554e7f54c1901819547e3365cd2b8a33a4730738c122, vars: {}, profile: bcb_analytics, target: dev, version: 1.12.5
+[0m20:19:35.485087 [info ] [MainThread]: Unable to do partial parsing because of a version mismatch
+[0m20:19:35.485730 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'partial_parser', 'label': 'c0a132a3-9b86-4e37-87a4-e6b0df641936', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f4e2b7a9430>]}
+[0m20:19:36.679095 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': 'c0a132a3-9b86-4e37-87a4-e6b0df641936', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f4e2bbbd790>]}
+[0m20:19:36.776750 [debug] [MainThread]: Wrote artifact WritableManifest to /usr/app/dbt/target/manifest.json
+[0m20:19:36.781662 [debug] [MainThread]: Wrote artifact SemanticManifest to /usr/app/dbt/target/semantic_manifest.json
+[0m20:19:36.807680 [debug] [MainThread]: Wrote artifact OsiDocument to /usr/app/dbt/target/osi_document.json
+[0m20:19:36.837448 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'resource_counts', 'label': 'c0a132a3-9b86-4e37-87a4-e6b0df641936', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f4e2954f320>]}
+[0m20:19:36.838027 [info ] [MainThread]: Found 6 models, 1 source, 477 macros
+[0m20:19:36.840279 [info ] [MainThread]: 
+[0m20:19:36.840892 [info ] [MainThread]: Concurrency: 4 threads (target='dev')
+[0m20:19:36.841382 [info ] [MainThread]: 
+[0m20:19:36.842160 [debug] [MainThread]: Acquiring new postgres connection 'master'
+[0m20:19:36.845763 [debug] [ThreadPool]: Acquiring new postgres connection 'list_bcb'
+[0m20:19:36.880644 [debug] [ThreadPool]: Using postgres connection "list_bcb"
+[0m20:19:36.881170 [debug] [ThreadPool]: On list_bcb: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "connection_name": "list_bcb"} */
+
+    select distinct nspname from pg_namespace
+  
+[0m20:19:36.881567 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m20:19:36.891514 [debug] [ThreadPool]: SQL status: SELECT 5 in 0.010 seconds
+[0m20:19:36.892937 [debug] [ThreadPool]: On list_bcb: Close
+[0m20:19:36.893691 [debug] [ThreadPool]: Re-using an available connection from the pool (formerly list_bcb, now create_bcb_analytics)
+[0m20:19:36.894234 [debug] [ThreadPool]: Creating schema "database: "bcb"
+schema: "analytics"
+"
+[0m20:19:36.898184 [debug] [ThreadPool]: Using postgres connection "create_bcb_analytics"
+[0m20:19:36.898590 [debug] [ThreadPool]: On create_bcb_analytics: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "connection_name": "create_bcb_analytics"} */
+create schema if not exists "analytics"
+[0m20:19:36.898888 [debug] [ThreadPool]: Opening a new connection, currently in state closed
+[0m20:19:36.906188 [debug] [ThreadPool]: SQL status: CREATE SCHEMA in 0.007 seconds
+[0m20:19:36.907351 [debug] [ThreadPool]: On create_bcb_analytics: COMMIT
+[0m20:19:36.907739 [debug] [ThreadPool]: Using postgres connection "create_bcb_analytics"
+[0m20:19:36.908120 [debug] [ThreadPool]: On create_bcb_analytics: COMMIT
+[0m20:19:36.909593 [debug] [ThreadPool]: SQL status: COMMIT in 0.001 seconds
+[0m20:19:36.909988 [debug] [ThreadPool]: On create_bcb_analytics: Close
+[0m20:19:36.912057 [debug] [ThreadPool]: Acquiring new postgres connection 'list_bcb_analytics'
+[0m20:19:36.916602 [debug] [ThreadPool]: Using postgres connection "list_bcb_analytics"
+[0m20:19:36.917100 [debug] [ThreadPool]: On list_bcb_analytics: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "connection_name": "list_bcb_analytics"} */
+select
+      'bcb' as database,
+      tablename as name,
+      schemaname as schema,
+      'table' as type
+    from pg_tables
+    where schemaname ilike 'analytics'
+    union all
+    select
+      'bcb' as database,
+      viewname as name,
+      schemaname as schema,
+      'view' as type
+    from pg_views
+    where schemaname ilike 'analytics'
+    union all
+    select
+      'bcb' as database,
+      matviewname as name,
+      schemaname as schema,
+      'materialized_view' as type
+    from pg_matviews
+    where schemaname ilike 'analytics'
+    union all
+    select distinct
+     'bcb' as database,
+     proname as name,
+     ns.nspname as schema,
+     'function' as type
+    from pg_proc
+     join pg_namespace as ns on pronamespace = ns.oid
+    where ns.nspname ilike 'analytics'
+  
+[0m20:19:36.936457 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m20:19:36.950152 [debug] [ThreadPool]: SQL status: SELECT 0 in 0.014 seconds
+[0m20:19:36.951593 [debug] [ThreadPool]: On list_bcb_analytics: ROLLBACK
+[0m20:19:36.952148 [debug] [ThreadPool]: On list_bcb_analytics: Close
+[0m20:19:36.955494 [debug] [MainThread]: Using postgres connection "master"
+[0m20:19:36.956103 [debug] [MainThread]: On master: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "connection_name": "master"} */
+select distinct
+        dependent_namespace.nspname as dependent_schema,
+        dependent_class.relname as dependent_name,
+        referenced_namespace.nspname as referenced_schema,
+        referenced_class.relname as referenced_name
+
+    -- Query for views: views are entries in pg_class with an entry in pg_rewrite, but we avoid
+    -- a seq scan on pg_rewrite by leveraging the fact there is an "internal" row in pg_depend for
+    -- the view...
+    from pg_class as dependent_class
+    join pg_namespace as dependent_namespace on dependent_namespace.oid = dependent_class.relnamespace
+    join pg_depend as dependent_depend on dependent_depend.refobjid = dependent_class.oid
+        and dependent_depend.classid = 'pg_rewrite'::regclass
+        and dependent_depend.refclassid = 'pg_class'::regclass
+        and dependent_depend.deptype = 'i'
+
+    -- ... and via pg_depend (that has a row per column, hence the need for "distinct" above, and
+    -- making sure to exclude the internal row to avoid a view appearing to depend on itself)...
+    join pg_depend as joining_depend on joining_depend.objid = dependent_depend.objid
+        and joining_depend.classid = 'pg_rewrite'::regclass
+        and joining_depend.refclassid = 'pg_class'::regclass
+        and joining_depend.refobjid != dependent_depend.refobjid
+
+    -- ... we can find the tables they query from in pg_class, but excluding system tables. Note we
+    -- don't need need to exclude _dependent_ system tables, because they only query from other
+    -- system tables, and so are automatically excluded by excluding _referenced_ system tables
+    join pg_class as referenced_class on referenced_class.oid = joining_depend.refobjid
+    join pg_namespace as referenced_namespace on referenced_namespace.oid = referenced_class.relnamespace
+        and referenced_namespace.nspname != 'information_schema'
+        and referenced_namespace.nspname not like 'pg\_%'
+
+    order by
+        dependent_schema, dependent_name, referenced_schema, referenced_name;
+[0m20:19:36.956646 [debug] [MainThread]: Opening a new connection, currently in state init
+[0m20:19:36.966167 [debug] [MainThread]: SQL status: SELECT 0 in 0.009 seconds
+[0m20:19:36.967423 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'runnable_timing', 'label': 'c0a132a3-9b86-4e37-87a4-e6b0df641936', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f4e2956faa0>]}
+[0m20:19:36.968036 [debug] [MainThread]: On master: ROLLBACK
+[0m20:19:36.968974 [debug] [MainThread]: On master: COMMIT
+[0m20:19:36.969478 [debug] [MainThread]: Using postgres connection "master"
+[0m20:19:36.969912 [debug] [MainThread]: On master: COMMIT
+[0m20:19:36.970551 [debug] [MainThread]: SQL status: COMMIT in 0.000 seconds
+[0m20:19:36.970991 [debug] [MainThread]: On master: Close
+[0m20:19:36.977052 [debug] [Thread-1 (]: Began running node model.bcb_analytics.stg_macro_monthly
+[0m20:19:36.977716 [info ] [Thread-1 (]: 1 of 6 START sql view model analytics.stg_macro_monthly ........................ [RUN]
+[0m20:19:36.978650 [debug] [Thread-1 (]: Re-using an available connection from the pool (formerly list_bcb_analytics, now model.bcb_analytics.stg_macro_monthly)
+[0m20:19:36.979221 [debug] [Thread-1 (]: Began compiling node model.bcb_analytics.stg_macro_monthly
+[0m20:19:36.984988 [debug] [Thread-1 (]: Writing injected SQL for node "model.bcb_analytics.stg_macro_monthly"
+[0m20:19:36.986493 [debug] [Thread-1 (]: Began executing node model.bcb_analytics.stg_macro_monthly
+[0m20:19:37.018531 [debug] [Thread-1 (]: Writing runtime sql for node "model.bcb_analytics.stg_macro_monthly"
+[0m20:19:37.020664 [debug] [Thread-1 (]: Using postgres connection "model.bcb_analytics.stg_macro_monthly"
+[0m20:19:37.021496 [debug] [Thread-1 (]: On model.bcb_analytics.stg_macro_monthly: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.stg_macro_monthly"} */
+
+  create view "bcb"."analytics"."stg_macro_monthly__dbt_tmp"
+    
+    
+  as (
+    -- Standardize the interface between the Spark-generated Gold layer
+-- and the dbt transformation layer.
+
+select
+
+    *
+
+from "bcb"."gold"."macro_monthly"
+  );
+[0m20:19:37.022015 [debug] [Thread-1 (]: Opening a new connection, currently in state closed
+[0m20:19:37.032857 [debug] [Thread-1 (]: SQL status: CREATE VIEW in 0.011 seconds
+[0m20:19:37.038096 [debug] [Thread-1 (]: Using postgres connection "model.bcb_analytics.stg_macro_monthly"
+[0m20:19:37.038672 [debug] [Thread-1 (]: On model.bcb_analytics.stg_macro_monthly: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.stg_macro_monthly"} */
+alter table "bcb"."analytics"."stg_macro_monthly__dbt_tmp" rename to "stg_macro_monthly"
+[0m20:19:37.040081 [debug] [Thread-1 (]: SQL status: ALTER TABLE in 0.001 seconds
+[0m20:19:37.054516 [debug] [Thread-1 (]: On model.bcb_analytics.stg_macro_monthly: COMMIT
+[0m20:19:37.055191 [debug] [Thread-1 (]: Using postgres connection "model.bcb_analytics.stg_macro_monthly"
+[0m20:19:37.055660 [debug] [Thread-1 (]: On model.bcb_analytics.stg_macro_monthly: COMMIT
+[0m20:19:37.057701 [debug] [Thread-1 (]: SQL status: COMMIT in 0.002 seconds
+[0m20:19:37.062935 [debug] [Thread-1 (]: Applying DROP to: "bcb"."analytics"."stg_macro_monthly__dbt_backup"
+[0m20:19:37.068076 [debug] [Thread-1 (]: Using postgres connection "model.bcb_analytics.stg_macro_monthly"
+[0m20:19:37.068636 [debug] [Thread-1 (]: On model.bcb_analytics.stg_macro_monthly: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.stg_macro_monthly"} */
+drop view if exists "bcb"."analytics"."stg_macro_monthly__dbt_backup" cascade
+[0m20:19:37.069819 [debug] [Thread-1 (]: SQL status: DROP VIEW in 0.001 seconds
+[0m20:19:37.072727 [debug] [Thread-1 (]: On model.bcb_analytics.stg_macro_monthly: Close
+[0m20:19:37.075149 [debug] [Thread-1 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': 'c0a132a3-9b86-4e37-87a4-e6b0df641936', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f4e306c4a10>]}
+[0m20:19:37.076072 [info ] [Thread-1 (]: 1 of 6 OK created sql view model analytics.stg_macro_monthly ................... [[32mCREATE VIEW[0m in 0.10s]
+[0m20:19:37.077201 [debug] [Thread-1 (]: Finished running node model.bcb_analytics.stg_macro_monthly
+[0m20:19:37.078612 [debug] [Thread-3 (]: Began running node model.bcb_analytics.fct_credit_pf
+[0m20:19:37.079055 [debug] [Thread-4 (]: Began running node model.bcb_analytics.fct_economic_activity
+[0m20:19:37.079566 [debug] [Thread-2 (]: Began running node model.bcb_analytics.fct_exchange_rate
+[0m20:19:37.080050 [info ] [Thread-3 (]: 2 of 6 START sql table model analytics.fct_credit_pf ........................... [RUN]
+[0m20:19:37.080476 [debug] [Thread-1 (]: Began running node model.bcb_analytics.fct_monetary_policy
+[0m20:19:37.081356 [info ] [Thread-4 (]: 3 of 6 START sql table model analytics.fct_economic_activity ................... [RUN]
+[0m20:19:37.082193 [info ] [Thread-2 (]: 4 of 6 START sql table model analytics.fct_exchange_rate ....................... [RUN]
+[0m20:19:37.083229 [debug] [Thread-3 (]: Acquiring new postgres connection 'model.bcb_analytics.fct_credit_pf'
+[0m20:19:37.083870 [info ] [Thread-1 (]: 5 of 6 START sql table model analytics.fct_monetary_policy ..................... [RUN]
+[0m20:19:37.084807 [debug] [Thread-4 (]: Acquiring new postgres connection 'model.bcb_analytics.fct_economic_activity'
+[0m20:19:37.085576 [debug] [Thread-2 (]: Re-using an available connection from the pool (formerly create_bcb_analytics, now model.bcb_analytics.fct_exchange_rate)
+[0m20:19:37.086586 [debug] [Thread-3 (]: Began compiling node model.bcb_analytics.fct_credit_pf
+[0m20:19:37.087325 [debug] [Thread-1 (]: Re-using an available connection from the pool (formerly model.bcb_analytics.stg_macro_monthly, now model.bcb_analytics.fct_monetary_policy)
+[0m20:19:37.088018 [debug] [Thread-4 (]: Began compiling node model.bcb_analytics.fct_economic_activity
+[0m20:19:37.088581 [debug] [Thread-2 (]: Began compiling node model.bcb_analytics.fct_exchange_rate
+[0m20:19:37.091270 [debug] [Thread-3 (]: Writing injected SQL for node "model.bcb_analytics.fct_credit_pf"
+[0m20:19:37.092047 [debug] [Thread-1 (]: Began compiling node model.bcb_analytics.fct_monetary_policy
+[0m20:19:37.094360 [debug] [Thread-4 (]: Writing injected SQL for node "model.bcb_analytics.fct_economic_activity"
+[0m20:19:37.096490 [debug] [Thread-2 (]: Writing injected SQL for node "model.bcb_analytics.fct_exchange_rate"
+[0m20:19:37.098560 [debug] [Thread-1 (]: Writing injected SQL for node "model.bcb_analytics.fct_monetary_policy"
+[0m20:19:37.099827 [debug] [Thread-3 (]: Began executing node model.bcb_analytics.fct_credit_pf
+[0m20:19:37.111144 [debug] [Thread-4 (]: Began executing node model.bcb_analytics.fct_economic_activity
+[0m20:19:37.111547 [debug] [Thread-1 (]: Began executing node model.bcb_analytics.fct_monetary_policy
+[0m20:19:37.122706 [debug] [Thread-4 (]: Writing runtime sql for node "model.bcb_analytics.fct_economic_activity"
+[0m20:19:37.124534 [debug] [Thread-3 (]: Writing runtime sql for node "model.bcb_analytics.fct_credit_pf"
+[0m20:19:37.127047 [debug] [Thread-1 (]: Writing runtime sql for node "model.bcb_analytics.fct_monetary_policy"
+[0m20:19:37.127506 [debug] [Thread-2 (]: Began executing node model.bcb_analytics.fct_exchange_rate
+[0m20:19:37.131901 [debug] [Thread-2 (]: Writing runtime sql for node "model.bcb_analytics.fct_exchange_rate"
+[0m20:19:37.133328 [debug] [Thread-1 (]: Using postgres connection "model.bcb_analytics.fct_monetary_policy"
+[0m20:19:37.134038 [debug] [Thread-4 (]: Using postgres connection "model.bcb_analytics.fct_economic_activity"
+[0m20:19:37.134522 [debug] [Thread-3 (]: Using postgres connection "model.bcb_analytics.fct_credit_pf"
+[0m20:19:37.134943 [debug] [Thread-1 (]: On model.bcb_analytics.fct_monetary_policy: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_monetary_policy"} */
+
+  
+    
+
+  create  table "bcb"."analytics"."fct_monetary_policy__dbt_tmp"
+  
+  
+    as
+  
+  (
+    -- Create analytical indicators related to monetary policy.
+-- The model derives changes in the Selic rate and the spread
+-- between the effective Selic rate and its target.
+
+select
+
+    reference_month,
+
+    selic,
+
+    selic_meta,
+
+    -- Difference between the effective Selic rate and its target
+    selic - selic_meta as selic_spread,
+
+    -- Selic rate from the previous month
+    lag(selic) over (
+        order by reference_month
+    ) as selic_previous_month,
+
+    -- Absolute monthly change in the Selic rate
+    selic - lag(selic) over (
+        order by reference_month
+    ) as selic_change,
+
+    -- Selic target from the previous month
+    lag(selic_meta) over (
+        order by reference_month
+    ) as selic_meta_previous_month,
+
+    -- Absolute monthly change in the Selic target
+    selic_meta - lag(selic_meta) over (
+        order by reference_month
+    ) as selic_meta_change
+
+from "bcb"."analytics"."stg_macro_monthly"
+  );
+  
+[0m20:19:37.135403 [debug] [Thread-2 (]: Using postgres connection "model.bcb_analytics.fct_exchange_rate"
+[0m20:19:37.135792 [debug] [Thread-4 (]: On model.bcb_analytics.fct_economic_activity: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_economic_activity"} */
+
+  
+    
+
+  create  table "bcb"."analytics"."fct_economic_activity__dbt_tmp"
+  
+  
+    as
+  
+  (
+    -- Create analytical indicators for economic activity.
+-- Monthly-over-month (MoM) and year-over-year (YoY)
+-- growth rates are calculated from the monthly series.
+
+with base as (
+
+    select
+
+        reference_month,
+
+        atividade_economica,
+        atividade_agropecuaria,
+        atividade_industria,
+        atividade_servicos,
+        atividade_impostos
+
+    from "bcb"."analytics"."stg_macro_monthly"
+
+),
+
+features as (
+
+    select
+
+        *,
+
+        -- Monthly-over-month economic activity growth
+        (
+            atividade_economica /
+            lag(atividade_economica) over (
+                order by reference_month
+            ) - 1
+        ) * 100 as atividade_economica_mom,
+
+        -- Year-over-year economic activity growth
+        (
+            atividade_economica /
+            lag(atividade_economica, 12) over (
+                order by reference_month
+            ) - 1
+        ) * 100 as atividade_economica_yoy,
+
+        -- Year-over-year industrial activity growth
+        (
+            atividade_industria /
+            lag(atividade_industria, 12) over (
+                order by reference_month
+            ) - 1
+        ) * 100 as industria_yoy,
+
+        -- Year-over-year services activity growth
+        (
+            atividade_servicos /
+            lag(atividade_servicos, 12) over (
+                order by reference_month
+            ) - 1
+        ) * 100 as servicos_yoy
+
+    from base
+
+)
+
+select *
+
+from features
+  );
+  
+[0m20:19:37.136399 [debug] [Thread-3 (]: On model.bcb_analytics.fct_credit_pf: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_credit_pf"} */
+
+  
+    
+
+  create  table "bcb"."analytics"."fct_credit_pf__dbt_tmp"
+  
+  
+    as
+  
+  (
+    -- Create analytical indicators for individual credit.
+-- The model combines credit concessions, outstanding balances,
+-- interest rates, and default indicators with their variations.
+
+select
+
+    reference_month,
+
+    credito_concedido_pf,
+
+    credito_livre_pf,
+
+    saldo_credito_pessoal,
+
+    taxa_credito_pf,
+
+    inadimplencia_pf,
+
+    inadimplencia_credito_pessoal_pf,
+
+    -- Absolute monthly change in credit concessions
+    credito_concedido_pf
+        - lag(credito_concedido_pf) over (
+            order by reference_month
+        ) as credito_concedido_change,
+
+    -- Monthly-over-month credit concession growth
+    (
+        credito_concedido_pf /
+        lag(credito_concedido_pf) over (
+            order by reference_month
+        ) - 1
+    ) * 100 as credito_concedido_mom,
+
+    -- Year-over-year credit concession growth
+    (
+        credito_concedido_pf /
+        lag(credito_concedido_pf, 12) over (
+            order by reference_month
+        ) - 1
+    ) * 100 as credito_concedido_yoy,
+
+    -- Absolute monthly change in the individual default rate
+    inadimplencia_pf
+        - lag(inadimplencia_pf) over (
+            order by reference_month
+        ) as inadimplencia_change
+
+from "bcb"."analytics"."stg_macro_monthly"
+  );
+  
+[0m20:19:37.136982 [debug] [Thread-1 (]: Opening a new connection, currently in state closed
+[0m20:19:37.137544 [debug] [Thread-2 (]: On model.bcb_analytics.fct_exchange_rate: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_exchange_rate"} */
+
+  
+    
+
+  create  table "bcb"."analytics"."fct_exchange_rate__dbt_tmp"
+  
+  
+    as
+  
+  (
+    -- Create analytical indicators for the BRL/USD exchange rate.
+-- Daily exchange rate series have already been aggregated
+-- to monthly averages by Spark.
+
+select
+
+    reference_month,
+
+    dolar_compra,
+
+    dolar_venda,
+
+    -- Average between the purchase and selling exchange rates
+    (dolar_compra + dolar_venda) / 2 as dolar_medio,
+
+    -- Difference between selling and purchase rates
+    dolar_venda - dolar_compra as spread_cambio,
+
+    -- Absolute monthly change in the selling exchange rate
+    dolar_venda
+        - lag(dolar_venda) over (
+            order by reference_month
+        ) as cambio_change,
+
+    -- Monthly-over-month exchange rate growth
+    (
+        dolar_venda /
+        lag(dolar_venda) over (
+            order by reference_month
+        ) - 1
+    ) * 100 as cambio_mom,
+
+    -- Year-over-year exchange rate growth
+    (
+        dolar_venda /
+        lag(dolar_venda, 12) over (
+            order by reference_month
+        ) - 1
+    ) * 100 as cambio_yoy
+
+from "bcb"."analytics"."stg_macro_monthly"
+  );
+  
+[0m20:19:37.138071 [debug] [Thread-4 (]: Opening a new connection, currently in state init
+[0m20:19:37.138544 [debug] [Thread-3 (]: Opening a new connection, currently in state init
+[0m20:19:37.139628 [debug] [Thread-2 (]: Opening a new connection, currently in state closed
+[0m20:19:37.149786 [debug] [Thread-3 (]: SQL status: SELECT 185 in 0.011 seconds
+[0m20:19:37.150348 [debug] [Thread-2 (]: SQL status: SELECT 185 in 0.011 seconds
+[0m20:19:37.150709 [debug] [Thread-1 (]: SQL status: SELECT 185 in 0.014 seconds
+[0m20:19:37.151134 [debug] [Thread-4 (]: SQL status: SELECT 185 in 0.013 seconds
+[0m20:19:37.156352 [debug] [Thread-3 (]: Using postgres connection "model.bcb_analytics.fct_credit_pf"
+[0m20:19:37.158999 [debug] [Thread-2 (]: Using postgres connection "model.bcb_analytics.fct_exchange_rate"
+[0m20:19:37.161308 [debug] [Thread-1 (]: Using postgres connection "model.bcb_analytics.fct_monetary_policy"
+[0m20:19:37.163536 [debug] [Thread-4 (]: Using postgres connection "model.bcb_analytics.fct_economic_activity"
+[0m20:19:37.164124 [debug] [Thread-3 (]: On model.bcb_analytics.fct_credit_pf: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_credit_pf"} */
+alter table "bcb"."analytics"."fct_credit_pf__dbt_tmp" rename to "fct_credit_pf"
+[0m20:19:37.164911 [debug] [Thread-2 (]: On model.bcb_analytics.fct_exchange_rate: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_exchange_rate"} */
+alter table "bcb"."analytics"."fct_exchange_rate__dbt_tmp" rename to "fct_exchange_rate"
+[0m20:19:37.165433 [debug] [Thread-1 (]: On model.bcb_analytics.fct_monetary_policy: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_monetary_policy"} */
+alter table "bcb"."analytics"."fct_monetary_policy__dbt_tmp" rename to "fct_monetary_policy"
+[0m20:19:37.165989 [debug] [Thread-4 (]: On model.bcb_analytics.fct_economic_activity: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_economic_activity"} */
+alter table "bcb"."analytics"."fct_economic_activity__dbt_tmp" rename to "fct_economic_activity"
+[0m20:19:37.166856 [debug] [Thread-3 (]: SQL status: ALTER TABLE in 0.000 seconds
+[0m20:19:37.167231 [debug] [Thread-1 (]: SQL status: ALTER TABLE in 0.001 seconds
+[0m20:19:37.167561 [debug] [Thread-2 (]: SQL status: ALTER TABLE in 0.001 seconds
+[0m20:19:37.169198 [debug] [Thread-3 (]: On model.bcb_analytics.fct_credit_pf: COMMIT
+[0m20:19:37.169514 [debug] [Thread-4 (]: SQL status: ALTER TABLE in 0.002 seconds
+[0m20:19:37.171029 [debug] [Thread-1 (]: On model.bcb_analytics.fct_monetary_policy: COMMIT
+[0m20:19:37.173030 [debug] [Thread-2 (]: On model.bcb_analytics.fct_exchange_rate: COMMIT
+[0m20:19:37.173570 [debug] [Thread-3 (]: Using postgres connection "model.bcb_analytics.fct_credit_pf"
+[0m20:19:37.175297 [debug] [Thread-4 (]: On model.bcb_analytics.fct_economic_activity: COMMIT
+[0m20:19:37.175778 [debug] [Thread-1 (]: Using postgres connection "model.bcb_analytics.fct_monetary_policy"
+[0m20:19:37.176373 [debug] [Thread-2 (]: Using postgres connection "model.bcb_analytics.fct_exchange_rate"
+[0m20:19:37.176857 [debug] [Thread-3 (]: On model.bcb_analytics.fct_credit_pf: COMMIT
+[0m20:19:37.177431 [debug] [Thread-4 (]: Using postgres connection "model.bcb_analytics.fct_economic_activity"
+[0m20:19:37.177858 [debug] [Thread-1 (]: On model.bcb_analytics.fct_monetary_policy: COMMIT
+[0m20:19:37.178301 [debug] [Thread-2 (]: On model.bcb_analytics.fct_exchange_rate: COMMIT
+[0m20:19:37.178935 [debug] [Thread-4 (]: On model.bcb_analytics.fct_economic_activity: COMMIT
+[0m20:19:37.180468 [debug] [Thread-3 (]: SQL status: COMMIT in 0.002 seconds
+[0m20:19:37.182224 [debug] [Thread-3 (]: Applying DROP to: "bcb"."analytics"."fct_credit_pf__dbt_backup"
+[0m20:19:37.182583 [debug] [Thread-4 (]: SQL status: COMMIT in 0.003 seconds
+[0m20:19:37.182950 [debug] [Thread-1 (]: SQL status: COMMIT in 0.004 seconds
+[0m20:19:37.185657 [debug] [Thread-3 (]: Using postgres connection "model.bcb_analytics.fct_credit_pf"
+[0m20:19:37.185997 [debug] [Thread-2 (]: SQL status: COMMIT in 0.006 seconds
+[0m20:19:37.187579 [debug] [Thread-4 (]: Applying DROP to: "bcb"."analytics"."fct_economic_activity__dbt_backup"
+[0m20:19:37.189616 [debug] [Thread-1 (]: Applying DROP to: "bcb"."analytics"."fct_monetary_policy__dbt_backup"
+[0m20:19:37.190097 [debug] [Thread-3 (]: On model.bcb_analytics.fct_credit_pf: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_credit_pf"} */
+drop table if exists "bcb"."analytics"."fct_credit_pf__dbt_backup" cascade
+[0m20:19:37.191709 [debug] [Thread-2 (]: Applying DROP to: "bcb"."analytics"."fct_exchange_rate__dbt_backup"
+[0m20:19:37.192633 [debug] [Thread-4 (]: Using postgres connection "model.bcb_analytics.fct_economic_activity"
+[0m20:19:37.193392 [debug] [Thread-1 (]: Using postgres connection "model.bcb_analytics.fct_monetary_policy"
+[0m20:19:37.194404 [debug] [Thread-2 (]: Using postgres connection "model.bcb_analytics.fct_exchange_rate"
+[0m20:19:37.194780 [debug] [Thread-3 (]: SQL status: DROP TABLE in 0.001 seconds
+[0m20:19:37.195127 [debug] [Thread-4 (]: On model.bcb_analytics.fct_economic_activity: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_economic_activity"} */
+drop table if exists "bcb"."analytics"."fct_economic_activity__dbt_backup" cascade
+[0m20:19:37.195483 [debug] [Thread-1 (]: On model.bcb_analytics.fct_monetary_policy: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_monetary_policy"} */
+drop table if exists "bcb"."analytics"."fct_monetary_policy__dbt_backup" cascade
+[0m20:19:37.195932 [debug] [Thread-2 (]: On model.bcb_analytics.fct_exchange_rate: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_exchange_rate"} */
+drop table if exists "bcb"."analytics"."fct_exchange_rate__dbt_backup" cascade
+[0m20:19:37.197631 [debug] [Thread-3 (]: On model.bcb_analytics.fct_credit_pf: Close
+[0m20:19:37.198483 [debug] [Thread-4 (]: SQL status: DROP TABLE in 0.000 seconds
+[0m20:19:37.198882 [debug] [Thread-1 (]: SQL status: DROP TABLE in 0.001 seconds
+[0m20:19:37.199487 [debug] [Thread-2 (]: SQL status: DROP TABLE in 0.000 seconds
+[0m20:19:37.200146 [debug] [Thread-3 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': 'c0a132a3-9b86-4e37-87a4-e6b0df641936', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f4e294dce60>]}
+[0m20:19:37.201550 [debug] [Thread-4 (]: On model.bcb_analytics.fct_economic_activity: Close
+[0m20:19:37.202933 [debug] [Thread-1 (]: On model.bcb_analytics.fct_monetary_policy: Close
+[0m20:19:37.204492 [debug] [Thread-2 (]: On model.bcb_analytics.fct_exchange_rate: Close
+[0m20:19:37.205355 [info ] [Thread-3 (]: 2 of 6 OK created sql table model analytics.fct_credit_pf ...................... [[32mSELECT 185[0m in 0.12s]
+[0m20:19:37.206233 [debug] [Thread-4 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': 'c0a132a3-9b86-4e37-87a4-e6b0df641936', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f4e28742f30>]}
+[0m20:19:37.206912 [debug] [Thread-1 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': 'c0a132a3-9b86-4e37-87a4-e6b0df641936', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f4e28741d00>]}
+[0m20:19:37.207510 [debug] [Thread-2 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': 'c0a132a3-9b86-4e37-87a4-e6b0df641936', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f4e28670620>]}
+[0m20:19:37.208323 [debug] [Thread-3 (]: Finished running node model.bcb_analytics.fct_credit_pf
+[0m20:19:37.209140 [info ] [Thread-4 (]: 3 of 6 OK created sql table model analytics.fct_economic_activity .............. [[32mSELECT 185[0m in 0.12s]
+[0m20:19:37.209938 [info ] [Thread-1 (]: 5 of 6 OK created sql table model analytics.fct_monetary_policy ................ [[32mSELECT 185[0m in 0.12s]
+[0m20:19:37.210834 [info ] [Thread-2 (]: 4 of 6 OK created sql table model analytics.fct_exchange_rate .................. [[32mSELECT 185[0m in 0.12s]
+[0m20:19:37.211441 [debug] [Thread-3 (]: Began running node model.bcb_analytics.mart_macro_credit_features
+[0m20:19:37.212142 [debug] [Thread-4 (]: Finished running node model.bcb_analytics.fct_economic_activity
+[0m20:19:37.212770 [debug] [Thread-1 (]: Finished running node model.bcb_analytics.fct_monetary_policy
+[0m20:19:37.213359 [debug] [Thread-2 (]: Finished running node model.bcb_analytics.fct_exchange_rate
+[0m20:19:37.213856 [info ] [Thread-3 (]: 6 of 6 START sql table model analytics.mart_macro_credit_features .............. [RUN]
+[0m20:19:37.215006 [debug] [Thread-3 (]: Re-using an available connection from the pool (formerly model.bcb_analytics.fct_credit_pf, now model.bcb_analytics.mart_macro_credit_features)
+[0m20:19:37.215457 [debug] [Thread-3 (]: Began compiling node model.bcb_analytics.mart_macro_credit_features
+[0m20:19:37.217528 [debug] [Thread-3 (]: Writing injected SQL for node "model.bcb_analytics.mart_macro_credit_features"
+[0m20:19:37.218914 [debug] [Thread-3 (]: Began executing node model.bcb_analytics.mart_macro_credit_features
+[0m20:19:37.223653 [debug] [Thread-3 (]: Writing runtime sql for node "model.bcb_analytics.mart_macro_credit_features"
+[0m20:19:37.225384 [debug] [Thread-3 (]: Using postgres connection "model.bcb_analytics.mart_macro_credit_features"
+[0m20:19:37.226035 [debug] [Thread-3 (]: On model.bcb_analytics.mart_macro_credit_features: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.mart_macro_credit_features"} */
+
+  
+    
+
+  create  table "bcb"."analytics"."mart_macro_credit_features__dbt_tmp"
+  
+  
+    as
+  
+  (
+    -- Create a feature dataset for statistical and machine learning models.
+-- Lagged macroeconomic variables are included to capture potential
+-- delayed effects of economic conditions on credit risk.
+
+select
+
+    reference_month,
+
+    selic,
+    selic_meta,
+
+    -- Lagged Selic features
+    lag(selic, 1) over (
+        order by reference_month
+    ) as selic_lag_1,
+
+    lag(selic, 3) over (
+        order by reference_month
+    ) as selic_lag_3,
+
+    lag(selic, 6) over (
+        order by reference_month
+    ) as selic_lag_6,
+
+    lag(selic, 12) over (
+        order by reference_month
+    ) as selic_lag_12,
+
+    ipca,
+
+    atividade_economica,
+
+    dolar_venda,
+
+    credito_concedido_pf,
+
+    taxa_credito_pf,
+
+    inadimplencia_pf,
+
+    -- Lagged default rate features
+    lag(inadimplencia_pf, 1) over (
+        order by reference_month
+    ) as inadimplencia_lag_1,
+
+    lag(inadimplencia_pf, 3) over (
+        order by reference_month
+    ) as inadimplencia_lag_3
+
+from "bcb"."analytics"."stg_macro_monthly"
+  );
+  
+[0m20:19:37.226638 [debug] [Thread-3 (]: Opening a new connection, currently in state closed
+[0m20:19:37.234149 [debug] [Thread-3 (]: SQL status: SELECT 185 in 0.007 seconds
+[0m20:19:37.236729 [debug] [Thread-3 (]: Using postgres connection "model.bcb_analytics.mart_macro_credit_features"
+[0m20:19:37.237340 [debug] [Thread-3 (]: On model.bcb_analytics.mart_macro_credit_features: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.mart_macro_credit_features"} */
+alter table "bcb"."analytics"."mart_macro_credit_features__dbt_tmp" rename to "mart_macro_credit_features"
+[0m20:19:37.238454 [debug] [Thread-3 (]: SQL status: ALTER TABLE in 0.000 seconds
+[0m20:19:37.240344 [debug] [Thread-3 (]: On model.bcb_analytics.mart_macro_credit_features: COMMIT
+[0m20:19:37.240833 [debug] [Thread-3 (]: Using postgres connection "model.bcb_analytics.mart_macro_credit_features"
+[0m20:19:37.241258 [debug] [Thread-3 (]: On model.bcb_analytics.mart_macro_credit_features: COMMIT
+[0m20:19:37.244262 [debug] [Thread-3 (]: SQL status: COMMIT in 0.002 seconds
+[0m20:19:37.246608 [debug] [Thread-3 (]: Applying DROP to: "bcb"."analytics"."mart_macro_credit_features__dbt_backup"
+[0m20:19:37.247571 [debug] [Thread-3 (]: Using postgres connection "model.bcb_analytics.mart_macro_credit_features"
+[0m20:19:37.248273 [debug] [Thread-3 (]: On model.bcb_analytics.mart_macro_credit_features: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.mart_macro_credit_features"} */
+drop table if exists "bcb"."analytics"."mart_macro_credit_features__dbt_backup" cascade
+[0m20:19:37.249092 [debug] [Thread-3 (]: SQL status: DROP TABLE in 0.000 seconds
+[0m20:19:37.250663 [debug] [Thread-3 (]: On model.bcb_analytics.mart_macro_credit_features: Close
+[0m20:19:37.251401 [debug] [Thread-3 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': 'c0a132a3-9b86-4e37-87a4-e6b0df641936', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f4e28670950>]}
+[0m20:19:37.252208 [info ] [Thread-3 (]: 6 of 6 OK created sql table model analytics.mart_macro_credit_features ......... [[32mSELECT 185[0m in 0.04s]
+[0m20:19:37.253079 [debug] [Thread-3 (]: Finished running node model.bcb_analytics.mart_macro_credit_features
+[0m20:19:37.254705 [debug] [MainThread]: On master: COMMIT
+[0m20:19:37.255347 [debug] [MainThread]: Using postgres connection "master"
+[0m20:19:37.255873 [debug] [MainThread]: On master: COMMIT
+[0m20:19:37.256298 [debug] [MainThread]: Opening a new connection, currently in state closed
+[0m20:19:37.262292 [debug] [MainThread]: SQL status: COMMIT in 0.006 seconds
+[0m20:19:37.262877 [debug] [MainThread]: On master: Close
+[0m20:19:37.263580 [debug] [MainThread]: Connection 'master' was properly closed.
+[0m20:19:37.264088 [debug] [MainThread]: Connection 'model.bcb_analytics.fct_exchange_rate' was properly closed.
+[0m20:19:37.264502 [debug] [MainThread]: Connection 'model.bcb_analytics.fct_monetary_policy' was properly closed.
+[0m20:19:37.264868 [debug] [MainThread]: Connection 'model.bcb_analytics.mart_macro_credit_features' was properly closed.
+[0m20:19:37.265363 [debug] [MainThread]: Connection 'model.bcb_analytics.fct_economic_activity' was properly closed.
+[0m20:19:37.266079 [info ] [MainThread]: 
+[0m20:19:37.266697 [info ] [MainThread]: Finished running 5 table models, 1 view model in 0 hours 0 minutes and 0.42 seconds (0.42s).
+[0m20:19:37.268437 [debug] [MainThread]: Command end result
+[0m20:19:37.323865 [debug] [MainThread]: Wrote artifact WritableManifest to /usr/app/dbt/target/manifest.json
+[0m20:19:37.326688 [debug] [MainThread]: Wrote artifact SemanticManifest to /usr/app/dbt/target/semantic_manifest.json
+[0m20:19:37.329776 [debug] [MainThread]: Wrote artifact OsiDocument to /usr/app/dbt/target/osi_document.json
+[0m20:19:37.336490 [debug] [MainThread]: Wrote artifact RunExecutionResult to /usr/app/dbt/target/run_results.json
+[0m20:19:37.337126 [info ] [MainThread]: 
+[0m20:19:37.337616 [info ] [MainThread]: [32mCompleted successfully[0m
+[0m20:19:37.338023 [info ] [MainThread]: 
+[0m20:19:37.338555 [info ] [MainThread]: Done. PASS=6 WARN=0 ERROR=0 SKIP=0 NO-OP=0 REUSED=0 TOTAL=6
+[0m20:19:37.339964 [debug] [MainThread]: Resource report: {"command_name": "build", "command_success": true, "command_wall_clock_time": 2.692045, "process_in_blocks": "153400", "process_kernel_time": 0.267604, "process_mem_max_rss": "146940", "process_out_blocks": "5698", "process_user_time": 3.352641}
+[0m20:19:37.340542 [debug] [MainThread]: Command `dbt build` succeeded at 20:19:37.340444 after 2.69 seconds
+[0m20:19:37.340995 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f4e2e47e030>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f4e2eb82690>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f4e292d0aa0>]}
+[0m20:19:37.341436 [debug] [MainThread]: Flushing usage events
+[0m20:19:38.139984 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m20:20:37.725515 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7eff6b9c33b0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7eff6c5bd0d0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7eff6b9c3200>]}
+
+
+============================== 20:20:37.728354 | 79ddc1b0-a895-4d88-83cd-01f97a7a6360 ==============================
+[0m20:20:37.728354 [info ] [MainThread]: Running with dbt=1.12.5
+[0m20:20:37.729024 [debug] [MainThread]: running dbt with arguments {'empty': 'False', 'maximum_seed_size_mib': '1', 'printer_width': '80', 'version_check': 'True', 'send_anonymous_usage_stats': 'True', 'introspect': 'True', 'target_path': 'None', 'no_print': 'None', 'write_json': 'True', 'fail_fast': 'False', 'indirect_selection': 'eager', 'warn_error': 'None', 'debug': 'False', 'profiles_dir': '/usr/app/dbt', 'static_parser': 'True', 'cache_selected_only': 'False', 'hints_enabled': 'True', 'log_format': 'default', 'use_colors': 'True', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'use_experimental_parser': 'False', 'quiet': 'False', 'partial_parse': 'True', 'invocation_command': 'dbt build', 'log_cache_events': 'False', 'log_path': '/usr/app/dbt/logs'}
+[0m20:20:37.893275 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '79ddc1b0-a895-4d88-83cd-01f97a7a6360', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7eff6b06f560>]}
+[0m20:20:37.953814 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': '79ddc1b0-a895-4d88-83cd-01f97a7a6360', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7eff6ae67680>]}
+[0m20:20:37.955256 [info ] [MainThread]: Registered adapter: postgres=1.11.0
+[0m20:20:38.011559 [debug] [MainThread]: checksum: 50810f2c0e4e5ec97f45554e7f54c1901819547e3365cd2b8a33a4730738c122, vars: {}, profile: bcb_analytics, target: dev, version: 1.12.5
+[0m20:20:38.471954 [debug] [MainThread]: Partial parsing enabled: 0 files deleted, 0 files added, 0 files changed.
+[0m20:20:38.472451 [debug] [MainThread]: Nothing changed, skipping partial parsing.
+[0m20:20:38.473182 [debug] [MainThread]: Partial parsing enabled, no changes found, skipping parsing
+[0m20:20:38.483024 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': '79ddc1b0-a895-4d88-83cd-01f97a7a6360', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7eff6dc58c80>]}
+[0m20:20:38.602265 [debug] [MainThread]: Wrote artifact WritableManifest to /usr/app/dbt/target/manifest.json
+[0m20:20:38.605395 [debug] [MainThread]: Wrote artifact SemanticManifest to /usr/app/dbt/target/semantic_manifest.json
+[0m20:20:38.616765 [debug] [MainThread]: Wrote artifact OsiDocument to /usr/app/dbt/target/osi_document.json
+[0m20:20:38.634451 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'resource_counts', 'label': '79ddc1b0-a895-4d88-83cd-01f97a7a6360', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7eff68d8f020>]}
+[0m20:20:38.635059 [info ] [MainThread]: Found 6 models, 1 source, 477 macros
+[0m20:20:38.637180 [info ] [MainThread]: 
+[0m20:20:38.637587 [info ] [MainThread]: Concurrency: 4 threads (target='dev')
+[0m20:20:38.638104 [info ] [MainThread]: 
+[0m20:20:38.638772 [debug] [MainThread]: Acquiring new postgres connection 'master'
+[0m20:20:38.642745 [debug] [ThreadPool]: Acquiring new postgres connection 'list_bcb'
+[0m20:20:38.719497 [debug] [ThreadPool]: Using postgres connection "list_bcb"
+[0m20:20:38.720093 [debug] [ThreadPool]: On list_bcb: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "connection_name": "list_bcb"} */
+
+    select distinct nspname from pg_namespace
+  
+[0m20:20:38.720460 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m20:20:38.727495 [debug] [ThreadPool]: SQL status: SELECT 6 in 0.007 seconds
+[0m20:20:38.729162 [debug] [ThreadPool]: On list_bcb: Close
+[0m20:20:38.731084 [debug] [ThreadPool]: Re-using an available connection from the pool (formerly list_bcb, now list_bcb_analytics)
+[0m20:20:38.735426 [debug] [ThreadPool]: Using postgres connection "list_bcb_analytics"
+[0m20:20:38.735919 [debug] [ThreadPool]: On list_bcb_analytics: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "connection_name": "list_bcb_analytics"} */
+select
+      'bcb' as database,
+      tablename as name,
+      schemaname as schema,
+      'table' as type
+    from pg_tables
+    where schemaname ilike 'analytics'
+    union all
+    select
+      'bcb' as database,
+      viewname as name,
+      schemaname as schema,
+      'view' as type
+    from pg_views
+    where schemaname ilike 'analytics'
+    union all
+    select
+      'bcb' as database,
+      matviewname as name,
+      schemaname as schema,
+      'materialized_view' as type
+    from pg_matviews
+    where schemaname ilike 'analytics'
+    union all
+    select distinct
+     'bcb' as database,
+     proname as name,
+     ns.nspname as schema,
+     'function' as type
+    from pg_proc
+     join pg_namespace as ns on pronamespace = ns.oid
+    where ns.nspname ilike 'analytics'
+  
+[0m20:20:38.736278 [debug] [ThreadPool]: Opening a new connection, currently in state closed
+[0m20:20:38.744058 [debug] [ThreadPool]: SQL status: SELECT 6 in 0.008 seconds
+[0m20:20:38.745721 [debug] [ThreadPool]: On list_bcb_analytics: ROLLBACK
+[0m20:20:38.746303 [debug] [ThreadPool]: On list_bcb_analytics: Close
+[0m20:20:38.750423 [debug] [MainThread]: Using postgres connection "master"
+[0m20:20:38.750928 [debug] [MainThread]: On master: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "connection_name": "master"} */
+select distinct
+        dependent_namespace.nspname as dependent_schema,
+        dependent_class.relname as dependent_name,
+        referenced_namespace.nspname as referenced_schema,
+        referenced_class.relname as referenced_name
+
+    -- Query for views: views are entries in pg_class with an entry in pg_rewrite, but we avoid
+    -- a seq scan on pg_rewrite by leveraging the fact there is an "internal" row in pg_depend for
+    -- the view...
+    from pg_class as dependent_class
+    join pg_namespace as dependent_namespace on dependent_namespace.oid = dependent_class.relnamespace
+    join pg_depend as dependent_depend on dependent_depend.refobjid = dependent_class.oid
+        and dependent_depend.classid = 'pg_rewrite'::regclass
+        and dependent_depend.refclassid = 'pg_class'::regclass
+        and dependent_depend.deptype = 'i'
+
+    -- ... and via pg_depend (that has a row per column, hence the need for "distinct" above, and
+    -- making sure to exclude the internal row to avoid a view appearing to depend on itself)...
+    join pg_depend as joining_depend on joining_depend.objid = dependent_depend.objid
+        and joining_depend.classid = 'pg_rewrite'::regclass
+        and joining_depend.refclassid = 'pg_class'::regclass
+        and joining_depend.refobjid != dependent_depend.refobjid
+
+    -- ... we can find the tables they query from in pg_class, but excluding system tables. Note we
+    -- don't need need to exclude _dependent_ system tables, because they only query from other
+    -- system tables, and so are automatically excluded by excluding _referenced_ system tables
+    join pg_class as referenced_class on referenced_class.oid = joining_depend.refobjid
+    join pg_namespace as referenced_namespace on referenced_namespace.oid = referenced_class.relnamespace
+        and referenced_namespace.nspname != 'information_schema'
+        and referenced_namespace.nspname not like 'pg\_%'
+
+    order by
+        dependent_schema, dependent_name, referenced_schema, referenced_name;
+[0m20:20:38.751582 [debug] [MainThread]: Opening a new connection, currently in state init
+[0m20:20:38.759074 [debug] [MainThread]: SQL status: SELECT 1 in 0.007 seconds
+[0m20:20:38.760555 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'runnable_timing', 'label': '79ddc1b0-a895-4d88-83cd-01f97a7a6360', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7eff67834a10>]}
+[0m20:20:38.761101 [debug] [MainThread]: On master: ROLLBACK
+[0m20:20:38.761647 [debug] [MainThread]: On master: COMMIT
+[0m20:20:38.762019 [debug] [MainThread]: Using postgres connection "master"
+[0m20:20:38.762364 [debug] [MainThread]: On master: COMMIT
+[0m20:20:38.762865 [debug] [MainThread]: SQL status: COMMIT in 0.000 seconds
+[0m20:20:38.763220 [debug] [MainThread]: On master: Close
+[0m20:20:38.765629 [debug] [Thread-1 (]: Began running node model.bcb_analytics.stg_macro_monthly
+[0m20:20:38.766268 [info ] [Thread-1 (]: 1 of 6 START sql view model analytics.stg_macro_monthly ........................ [RUN]
+[0m20:20:38.766896 [debug] [Thread-1 (]: Re-using an available connection from the pool (formerly list_bcb_analytics, now model.bcb_analytics.stg_macro_monthly)
+[0m20:20:38.767320 [debug] [Thread-1 (]: Began compiling node model.bcb_analytics.stg_macro_monthly
+[0m20:20:38.773085 [debug] [Thread-1 (]: Writing injected SQL for node "model.bcb_analytics.stg_macro_monthly"
+[0m20:20:38.774274 [debug] [Thread-1 (]: Began executing node model.bcb_analytics.stg_macro_monthly
+[0m20:20:38.802042 [debug] [Thread-1 (]: Writing runtime sql for node "model.bcb_analytics.stg_macro_monthly"
+[0m20:20:38.803318 [debug] [Thread-1 (]: Using postgres connection "model.bcb_analytics.stg_macro_monthly"
+[0m20:20:38.803824 [debug] [Thread-1 (]: On model.bcb_analytics.stg_macro_monthly: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.stg_macro_monthly"} */
+
+  create view "bcb"."analytics"."stg_macro_monthly__dbt_tmp"
+    
+    
+  as (
+    -- Standardize the interface between the Spark-generated Gold layer
+-- and the dbt transformation layer.
+
+select
+
+    *
+
+from "bcb"."gold"."macro_monthly"
+  );
+[0m20:20:38.804285 [debug] [Thread-1 (]: Opening a new connection, currently in state closed
+[0m20:20:38.811113 [debug] [Thread-1 (]: SQL status: CREATE VIEW in 0.007 seconds
+[0m20:20:38.816005 [debug] [Thread-1 (]: Using postgres connection "model.bcb_analytics.stg_macro_monthly"
+[0m20:20:38.816466 [debug] [Thread-1 (]: On model.bcb_analytics.stg_macro_monthly: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.stg_macro_monthly"} */
+alter table "bcb"."analytics"."stg_macro_monthly" rename to "stg_macro_monthly__dbt_backup"
+[0m20:20:38.817257 [debug] [Thread-1 (]: SQL status: ALTER TABLE in 0.000 seconds
+[0m20:20:38.819493 [debug] [Thread-1 (]: Using postgres connection "model.bcb_analytics.stg_macro_monthly"
+[0m20:20:38.819883 [debug] [Thread-1 (]: On model.bcb_analytics.stg_macro_monthly: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.stg_macro_monthly"} */
+alter table "bcb"."analytics"."stg_macro_monthly__dbt_tmp" rename to "stg_macro_monthly"
+[0m20:20:38.820651 [debug] [Thread-1 (]: SQL status: ALTER TABLE in 0.000 seconds
+[0m20:20:38.835491 [debug] [Thread-1 (]: On model.bcb_analytics.stg_macro_monthly: COMMIT
+[0m20:20:38.836070 [debug] [Thread-1 (]: Using postgres connection "model.bcb_analytics.stg_macro_monthly"
+[0m20:20:38.836490 [debug] [Thread-1 (]: On model.bcb_analytics.stg_macro_monthly: COMMIT
+[0m20:20:38.838287 [debug] [Thread-1 (]: SQL status: COMMIT in 0.001 seconds
+[0m20:20:38.843087 [debug] [Thread-1 (]: Applying DROP to: "bcb"."analytics"."stg_macro_monthly__dbt_backup"
+[0m20:20:38.847884 [debug] [Thread-1 (]: Using postgres connection "model.bcb_analytics.stg_macro_monthly"
+[0m20:20:38.848345 [debug] [Thread-1 (]: On model.bcb_analytics.stg_macro_monthly: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.stg_macro_monthly"} */
+drop view if exists "bcb"."analytics"."stg_macro_monthly__dbt_backup" cascade
+[0m20:20:38.856495 [debug] [Thread-1 (]: SQL status: DROP VIEW in 0.008 seconds
+[0m20:20:38.859041 [debug] [Thread-1 (]: On model.bcb_analytics.stg_macro_monthly: Close
+[0m20:20:38.860718 [debug] [Thread-1 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': '79ddc1b0-a895-4d88-83cd-01f97a7a6360', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7eff6dd80830>]}
+[0m20:20:38.861531 [info ] [Thread-1 (]: 1 of 6 OK created sql view model analytics.stg_macro_monthly ................... [[32mCREATE VIEW[0m in 0.09s]
+[0m20:20:38.862275 [debug] [Thread-1 (]: Finished running node model.bcb_analytics.stg_macro_monthly
+[0m20:20:38.863383 [debug] [Thread-3 (]: Began running node model.bcb_analytics.fct_credit_pf
+[0m20:20:38.863770 [debug] [Thread-4 (]: Began running node model.bcb_analytics.fct_economic_activity
+[0m20:20:38.864180 [debug] [Thread-2 (]: Began running node model.bcb_analytics.fct_exchange_rate
+[0m20:20:38.864608 [info ] [Thread-3 (]: 2 of 6 START sql table model analytics.fct_credit_pf ........................... [RUN]
+[0m20:20:38.865022 [debug] [Thread-1 (]: Began running node model.bcb_analytics.fct_monetary_policy
+[0m20:20:38.865583 [info ] [Thread-4 (]: 3 of 6 START sql table model analytics.fct_economic_activity ................... [RUN]
+[0m20:20:38.866292 [info ] [Thread-2 (]: 4 of 6 START sql table model analytics.fct_exchange_rate ....................... [RUN]
+[0m20:20:38.867065 [debug] [Thread-3 (]: Acquiring new postgres connection 'model.bcb_analytics.fct_credit_pf'
+[0m20:20:38.867583 [info ] [Thread-1 (]: 5 of 6 START sql table model analytics.fct_monetary_policy ..................... [RUN]
+[0m20:20:38.868243 [debug] [Thread-4 (]: Acquiring new postgres connection 'model.bcb_analytics.fct_economic_activity'
+[0m20:20:38.869091 [debug] [Thread-2 (]: Acquiring new postgres connection 'model.bcb_analytics.fct_exchange_rate'
+[0m20:20:38.870914 [debug] [Thread-2 (]: Began compiling node model.bcb_analytics.fct_exchange_rate
+[0m20:20:38.870038 [debug] [Thread-1 (]: Re-using an available connection from the pool (formerly model.bcb_analytics.stg_macro_monthly, now model.bcb_analytics.fct_monetary_policy)
+[0m20:20:38.870487 [debug] [Thread-4 (]: Began compiling node model.bcb_analytics.fct_economic_activity
+[0m20:20:38.869550 [debug] [Thread-3 (]: Began compiling node model.bcb_analytics.fct_credit_pf
+[0m20:20:38.872856 [debug] [Thread-2 (]: Writing injected SQL for node "model.bcb_analytics.fct_exchange_rate"
+[0m20:20:38.873563 [debug] [Thread-1 (]: Began compiling node model.bcb_analytics.fct_monetary_policy
+[0m20:20:38.876847 [debug] [Thread-4 (]: Writing injected SQL for node "model.bcb_analytics.fct_economic_activity"
+[0m20:20:38.878922 [debug] [Thread-3 (]: Writing injected SQL for node "model.bcb_analytics.fct_credit_pf"
+[0m20:20:38.881200 [debug] [Thread-1 (]: Writing injected SQL for node "model.bcb_analytics.fct_monetary_policy"
+[0m20:20:38.882121 [debug] [Thread-2 (]: Began executing node model.bcb_analytics.fct_exchange_rate
+[0m20:20:38.893428 [debug] [Thread-4 (]: Began executing node model.bcb_analytics.fct_economic_activity
+[0m20:20:38.904113 [debug] [Thread-1 (]: Began executing node model.bcb_analytics.fct_monetary_policy
+[0m20:20:38.908137 [debug] [Thread-2 (]: Writing runtime sql for node "model.bcb_analytics.fct_exchange_rate"
+[0m20:20:38.909619 [debug] [Thread-4 (]: Writing runtime sql for node "model.bcb_analytics.fct_economic_activity"
+[0m20:20:38.912030 [debug] [Thread-1 (]: Writing runtime sql for node "model.bcb_analytics.fct_monetary_policy"
+[0m20:20:38.912362 [debug] [Thread-3 (]: Began executing node model.bcb_analytics.fct_credit_pf
+[0m20:20:38.916007 [debug] [Thread-3 (]: Writing runtime sql for node "model.bcb_analytics.fct_credit_pf"
+[0m20:20:38.916853 [debug] [Thread-4 (]: Using postgres connection "model.bcb_analytics.fct_economic_activity"
+[0m20:20:38.917374 [debug] [Thread-2 (]: Using postgres connection "model.bcb_analytics.fct_exchange_rate"
+[0m20:20:38.917817 [debug] [Thread-4 (]: On model.bcb_analytics.fct_economic_activity: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_economic_activity"} */
+
+  
+    
+
+  create  table "bcb"."analytics"."fct_economic_activity__dbt_tmp"
+  
+  
+    as
+  
+  (
+    -- Create analytical indicators for economic activity.
+-- Monthly-over-month (MoM) and year-over-year (YoY)
+-- growth rates are calculated from the monthly series.
+
+with base as (
+
+    select
+
+        reference_month,
+
+        atividade_economica,
+        atividade_agropecuaria,
+        atividade_industria,
+        atividade_servicos,
+        atividade_impostos
+
+    from "bcb"."analytics"."stg_macro_monthly"
+
+),
+
+features as (
+
+    select
+
+        *,
+
+        -- Monthly-over-month economic activity growth
+        (
+            atividade_economica /
+            lag(atividade_economica) over (
+                order by reference_month
+            ) - 1
+        ) * 100 as atividade_economica_mom,
+
+        -- Year-over-year economic activity growth
+        (
+            atividade_economica /
+            lag(atividade_economica, 12) over (
+                order by reference_month
+            ) - 1
+        ) * 100 as atividade_economica_yoy,
+
+        -- Year-over-year industrial activity growth
+        (
+            atividade_industria /
+            lag(atividade_industria, 12) over (
+                order by reference_month
+            ) - 1
+        ) * 100 as industria_yoy,
+
+        -- Year-over-year services activity growth
+        (
+            atividade_servicos /
+            lag(atividade_servicos, 12) over (
+                order by reference_month
+            ) - 1
+        ) * 100 as servicos_yoy
+
+    from base
+
+)
+
+select *
+
+from features
+  );
+  
+[0m20:20:38.918183 [debug] [Thread-1 (]: Using postgres connection "model.bcb_analytics.fct_monetary_policy"
+[0m20:20:38.919029 [debug] [Thread-3 (]: Using postgres connection "model.bcb_analytics.fct_credit_pf"
+[0m20:20:38.918681 [debug] [Thread-2 (]: On model.bcb_analytics.fct_exchange_rate: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_exchange_rate"} */
+
+  
+    
+
+  create  table "bcb"."analytics"."fct_exchange_rate__dbt_tmp"
+  
+  
+    as
+  
+  (
+    -- Create analytical indicators for the BRL/USD exchange rate.
+-- Daily exchange rate series have already been aggregated
+-- to monthly averages by Spark.
+
+select
+
+    reference_month,
+
+    dolar_compra,
+
+    dolar_venda,
+
+    -- Average between the purchase and selling exchange rates
+    (dolar_compra + dolar_venda) / 2 as dolar_medio,
+
+    -- Difference between selling and purchase rates
+    dolar_venda - dolar_compra as spread_cambio,
+
+    -- Absolute monthly change in the selling exchange rate
+    dolar_venda
+        - lag(dolar_venda) over (
+            order by reference_month
+        ) as cambio_change,
+
+    -- Monthly-over-month exchange rate growth
+    (
+        dolar_venda /
+        lag(dolar_venda) over (
+            order by reference_month
+        ) - 1
+    ) * 100 as cambio_mom,
+
+    -- Year-over-year exchange rate growth
+    (
+        dolar_venda /
+        lag(dolar_venda, 12) over (
+            order by reference_month
+        ) - 1
+    ) * 100 as cambio_yoy
+
+from "bcb"."analytics"."stg_macro_monthly"
+  );
+  
+[0m20:20:38.919425 [debug] [Thread-4 (]: Opening a new connection, currently in state init
+[0m20:20:38.919909 [debug] [Thread-1 (]: On model.bcb_analytics.fct_monetary_policy: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_monetary_policy"} */
+
+  
+    
+
+  create  table "bcb"."analytics"."fct_monetary_policy__dbt_tmp"
+  
+  
+    as
+  
+  (
+    -- Create analytical indicators related to monetary policy.
+-- The model derives changes in the Selic rate and the spread
+-- between the effective Selic rate and its target.
+
+select
+
+    reference_month,
+
+    selic,
+
+    selic_meta,
+
+    -- Difference between the effective Selic rate and its target
+    selic - selic_meta as selic_spread,
+
+    -- Selic rate from the previous month
+    lag(selic) over (
+        order by reference_month
+    ) as selic_previous_month,
+
+    -- Absolute monthly change in the Selic rate
+    selic - lag(selic) over (
+        order by reference_month
+    ) as selic_change,
+
+    -- Selic target from the previous month
+    lag(selic_meta) over (
+        order by reference_month
+    ) as selic_meta_previous_month,
+
+    -- Absolute monthly change in the Selic target
+    selic_meta - lag(selic_meta) over (
+        order by reference_month
+    ) as selic_meta_change
+
+from "bcb"."analytics"."stg_macro_monthly"
+  );
+  
+[0m20:20:38.920410 [debug] [Thread-3 (]: On model.bcb_analytics.fct_credit_pf: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_credit_pf"} */
+
+  
+    
+
+  create  table "bcb"."analytics"."fct_credit_pf__dbt_tmp"
+  
+  
+    as
+  
+  (
+    -- Create analytical indicators for individual credit.
+-- The model combines credit concessions, outstanding balances,
+-- interest rates, and default indicators with their variations.
+
+select
+
+    reference_month,
+
+    credito_concedido_pf,
+
+    credito_livre_pf,
+
+    saldo_credito_pessoal,
+
+    taxa_credito_pf,
+
+    inadimplencia_pf,
+
+    inadimplencia_credito_pessoal_pf,
+
+    -- Absolute monthly change in credit concessions
+    credito_concedido_pf
+        - lag(credito_concedido_pf) over (
+            order by reference_month
+        ) as credito_concedido_change,
+
+    -- Monthly-over-month credit concession growth
+    (
+        credito_concedido_pf /
+        lag(credito_concedido_pf) over (
+            order by reference_month
+        ) - 1
+    ) * 100 as credito_concedido_mom,
+
+    -- Year-over-year credit concession growth
+    (
+        credito_concedido_pf /
+        lag(credito_concedido_pf, 12) over (
+            order by reference_month
+        ) - 1
+    ) * 100 as credito_concedido_yoy,
+
+    -- Absolute monthly change in the individual default rate
+    inadimplencia_pf
+        - lag(inadimplencia_pf) over (
+            order by reference_month
+        ) as inadimplencia_change
+
+from "bcb"."analytics"."stg_macro_monthly"
+  );
+  
+[0m20:20:38.920914 [debug] [Thread-2 (]: Opening a new connection, currently in state init
+[0m20:20:38.921690 [debug] [Thread-1 (]: Opening a new connection, currently in state closed
+[0m20:20:38.922196 [debug] [Thread-3 (]: Opening a new connection, currently in state init
+[0m20:20:38.931108 [debug] [Thread-3 (]: SQL status: SELECT 185 in 0.009 seconds
+[0m20:20:38.931635 [debug] [Thread-2 (]: SQL status: SELECT 185 in 0.011 seconds
+[0m20:20:38.936921 [debug] [Thread-3 (]: Using postgres connection "model.bcb_analytics.fct_credit_pf"
+[0m20:20:38.940327 [debug] [Thread-2 (]: Using postgres connection "model.bcb_analytics.fct_exchange_rate"
+[0m20:20:38.941012 [debug] [Thread-4 (]: SQL status: SELECT 185 in 0.022 seconds
+[0m20:20:38.941392 [debug] [Thread-1 (]: SQL status: SELECT 185 in 0.020 seconds
+[0m20:20:38.941780 [debug] [Thread-3 (]: On model.bcb_analytics.fct_credit_pf: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_credit_pf"} */
+alter table "bcb"."analytics"."fct_credit_pf" rename to "fct_credit_pf__dbt_backup"
+[0m20:20:38.942269 [debug] [Thread-2 (]: On model.bcb_analytics.fct_exchange_rate: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_exchange_rate"} */
+alter table "bcb"."analytics"."fct_exchange_rate" rename to "fct_exchange_rate__dbt_backup"
+[0m20:20:38.944646 [debug] [Thread-4 (]: Using postgres connection "model.bcb_analytics.fct_economic_activity"
+[0m20:20:38.946880 [debug] [Thread-1 (]: Using postgres connection "model.bcb_analytics.fct_monetary_policy"
+[0m20:20:38.947784 [debug] [Thread-3 (]: SQL status: ALTER TABLE in 0.000 seconds
+[0m20:20:38.948182 [debug] [Thread-4 (]: On model.bcb_analytics.fct_economic_activity: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_economic_activity"} */
+alter table "bcb"."analytics"."fct_economic_activity" rename to "fct_economic_activity__dbt_backup"
+[0m20:20:38.948486 [debug] [Thread-2 (]: SQL status: ALTER TABLE in 0.001 seconds
+[0m20:20:38.948882 [debug] [Thread-1 (]: On model.bcb_analytics.fct_monetary_policy: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_monetary_policy"} */
+alter table "bcb"."analytics"."fct_monetary_policy" rename to "fct_monetary_policy__dbt_backup"
+[0m20:20:38.951033 [debug] [Thread-3 (]: Using postgres connection "model.bcb_analytics.fct_credit_pf"
+[0m20:20:38.953660 [debug] [Thread-2 (]: Using postgres connection "model.bcb_analytics.fct_exchange_rate"
+[0m20:20:38.954065 [debug] [Thread-4 (]: SQL status: ALTER TABLE in 0.003 seconds
+[0m20:20:38.954493 [debug] [Thread-3 (]: On model.bcb_analytics.fct_credit_pf: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_credit_pf"} */
+alter table "bcb"."analytics"."fct_credit_pf__dbt_tmp" rename to "fct_credit_pf"
+[0m20:20:38.954867 [debug] [Thread-1 (]: SQL status: ALTER TABLE in 0.000 seconds
+[0m20:20:38.955257 [debug] [Thread-2 (]: On model.bcb_analytics.fct_exchange_rate: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_exchange_rate"} */
+alter table "bcb"."analytics"."fct_exchange_rate__dbt_tmp" rename to "fct_exchange_rate"
+[0m20:20:38.957347 [debug] [Thread-4 (]: Using postgres connection "model.bcb_analytics.fct_economic_activity"
+[0m20:20:38.960723 [debug] [Thread-4 (]: On model.bcb_analytics.fct_economic_activity: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_economic_activity"} */
+alter table "bcb"."analytics"."fct_economic_activity__dbt_tmp" rename to "fct_economic_activity"
+[0m20:20:38.959693 [debug] [Thread-3 (]: SQL status: ALTER TABLE in 0.002 seconds
+[0m20:20:38.960373 [debug] [Thread-2 (]: SQL status: ALTER TABLE in 0.000 seconds
+[0m20:20:38.959288 [debug] [Thread-1 (]: Using postgres connection "model.bcb_analytics.fct_monetary_policy"
+[0m20:20:38.962568 [debug] [Thread-3 (]: On model.bcb_analytics.fct_credit_pf: COMMIT
+[0m20:20:38.962912 [debug] [Thread-4 (]: SQL status: ALTER TABLE in 0.002 seconds
+[0m20:20:38.964396 [debug] [Thread-2 (]: On model.bcb_analytics.fct_exchange_rate: COMMIT
+[0m20:20:38.964844 [debug] [Thread-1 (]: On model.bcb_analytics.fct_monetary_policy: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_monetary_policy"} */
+alter table "bcb"."analytics"."fct_monetary_policy__dbt_tmp" rename to "fct_monetary_policy"
+[0m20:20:38.965375 [debug] [Thread-3 (]: Using postgres connection "model.bcb_analytics.fct_credit_pf"
+[0m20:20:38.966877 [debug] [Thread-4 (]: On model.bcb_analytics.fct_economic_activity: COMMIT
+[0m20:20:38.967279 [debug] [Thread-2 (]: Using postgres connection "model.bcb_analytics.fct_exchange_rate"
+[0m20:20:38.967989 [debug] [Thread-3 (]: On model.bcb_analytics.fct_credit_pf: COMMIT
+[0m20:20:38.968771 [debug] [Thread-4 (]: Using postgres connection "model.bcb_analytics.fct_economic_activity"
+[0m20:20:38.968404 [debug] [Thread-1 (]: SQL status: ALTER TABLE in 0.001 seconds
+[0m20:20:38.969258 [debug] [Thread-2 (]: On model.bcb_analytics.fct_exchange_rate: COMMIT
+[0m20:20:38.970004 [debug] [Thread-4 (]: On model.bcb_analytics.fct_economic_activity: COMMIT
+[0m20:20:38.971727 [debug] [Thread-1 (]: On model.bcb_analytics.fct_monetary_policy: COMMIT
+[0m20:20:38.972072 [debug] [Thread-3 (]: SQL status: COMMIT in 0.002 seconds
+[0m20:20:38.972832 [debug] [Thread-1 (]: Using postgres connection "model.bcb_analytics.fct_monetary_policy"
+[0m20:20:38.974805 [debug] [Thread-3 (]: Applying DROP to: "bcb"."analytics"."fct_credit_pf__dbt_backup"
+[0m20:20:38.975159 [debug] [Thread-4 (]: SQL status: COMMIT in 0.003 seconds
+[0m20:20:38.975514 [debug] [Thread-2 (]: SQL status: COMMIT in 0.003 seconds
+[0m20:20:38.975825 [debug] [Thread-1 (]: On model.bcb_analytics.fct_monetary_policy: COMMIT
+[0m20:20:38.978499 [debug] [Thread-3 (]: Using postgres connection "model.bcb_analytics.fct_credit_pf"
+[0m20:20:38.980069 [debug] [Thread-4 (]: Applying DROP to: "bcb"."analytics"."fct_economic_activity__dbt_backup"
+[0m20:20:38.981746 [debug] [Thread-2 (]: Applying DROP to: "bcb"."analytics"."fct_exchange_rate__dbt_backup"
+[0m20:20:38.982391 [debug] [Thread-3 (]: On model.bcb_analytics.fct_credit_pf: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_credit_pf"} */
+drop table if exists "bcb"."analytics"."fct_credit_pf__dbt_backup" cascade
+[0m20:20:38.983428 [debug] [Thread-4 (]: Using postgres connection "model.bcb_analytics.fct_economic_activity"
+[0m20:20:38.984247 [debug] [Thread-2 (]: Using postgres connection "model.bcb_analytics.fct_exchange_rate"
+[0m20:20:38.984892 [debug] [Thread-4 (]: On model.bcb_analytics.fct_economic_activity: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_economic_activity"} */
+drop table if exists "bcb"."analytics"."fct_economic_activity__dbt_backup" cascade
+[0m20:20:38.985452 [debug] [Thread-2 (]: On model.bcb_analytics.fct_exchange_rate: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_exchange_rate"} */
+drop table if exists "bcb"."analytics"."fct_exchange_rate__dbt_backup" cascade
+[0m20:20:38.988362 [debug] [Thread-1 (]: SQL status: COMMIT in 0.006 seconds
+[0m20:20:38.990174 [debug] [Thread-1 (]: Applying DROP to: "bcb"."analytics"."fct_monetary_policy__dbt_backup"
+[0m20:20:38.990502 [debug] [Thread-4 (]: SQL status: DROP TABLE in 0.005 seconds
+[0m20:20:38.990813 [debug] [Thread-3 (]: SQL status: DROP TABLE in 0.006 seconds
+[0m20:20:38.992207 [debug] [Thread-1 (]: Using postgres connection "model.bcb_analytics.fct_monetary_policy"
+[0m20:20:38.992489 [debug] [Thread-2 (]: SQL status: DROP TABLE in 0.006 seconds
+[0m20:20:38.993902 [debug] [Thread-4 (]: On model.bcb_analytics.fct_economic_activity: Close
+[0m20:20:38.995403 [debug] [Thread-3 (]: On model.bcb_analytics.fct_credit_pf: Close
+[0m20:20:38.995810 [debug] [Thread-1 (]: On model.bcb_analytics.fct_monetary_policy: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.fct_monetary_policy"} */
+drop table if exists "bcb"."analytics"."fct_monetary_policy__dbt_backup" cascade
+[0m20:20:38.997277 [debug] [Thread-2 (]: On model.bcb_analytics.fct_exchange_rate: Close
+[0m20:20:38.998101 [debug] [Thread-4 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': '79ddc1b0-a895-4d88-83cd-01f97a7a6360', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7eff6798f8f0>]}
+[0m20:20:38.998629 [debug] [Thread-3 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': '79ddc1b0-a895-4d88-83cd-01f97a7a6360', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7eff68d8c440>]}
+[0m20:20:38.999574 [debug] [Thread-2 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': '79ddc1b0-a895-4d88-83cd-01f97a7a6360', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7eff64718260>]}
+[0m20:20:39.001105 [info ] [Thread-4 (]: 3 of 6 OK created sql table model analytics.fct_economic_activity .............. [[32mSELECT 185[0m in 0.13s]
+[0m20:20:39.001896 [info ] [Thread-3 (]: 2 of 6 OK created sql table model analytics.fct_credit_pf ...................... [[32mSELECT 185[0m in 0.13s]
+[0m20:20:39.002787 [info ] [Thread-2 (]: 4 of 6 OK created sql table model analytics.fct_exchange_rate .................. [[32mSELECT 185[0m in 0.13s]
+[0m20:20:39.003288 [debug] [Thread-1 (]: SQL status: DROP TABLE in 0.004 seconds
+[0m20:20:39.003958 [debug] [Thread-4 (]: Finished running node model.bcb_analytics.fct_economic_activity
+[0m20:20:39.004636 [debug] [Thread-3 (]: Finished running node model.bcb_analytics.fct_credit_pf
+[0m20:20:39.005205 [debug] [Thread-2 (]: Finished running node model.bcb_analytics.fct_exchange_rate
+[0m20:20:39.006517 [debug] [Thread-1 (]: On model.bcb_analytics.fct_monetary_policy: Close
+[0m20:20:39.007020 [debug] [Thread-4 (]: Began running node model.bcb_analytics.mart_macro_credit_features
+[0m20:20:39.008651 [info ] [Thread-4 (]: 6 of 6 START sql table model analytics.mart_macro_credit_features .............. [RUN]
+[0m20:20:39.008032 [debug] [Thread-1 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': '79ddc1b0-a895-4d88-83cd-01f97a7a6360', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7eff6798e450>]}
+[0m20:20:39.009224 [debug] [Thread-4 (]: Re-using an available connection from the pool (formerly model.bcb_analytics.fct_economic_activity, now model.bcb_analytics.mart_macro_credit_features)
+[0m20:20:39.009972 [info ] [Thread-1 (]: 5 of 6 OK created sql table model analytics.fct_monetary_policy ................ [[32mSELECT 185[0m in 0.14s]
+[0m20:20:39.011070 [debug] [Thread-1 (]: Finished running node model.bcb_analytics.fct_monetary_policy
+[0m20:20:39.010442 [debug] [Thread-4 (]: Began compiling node model.bcb_analytics.mart_macro_credit_features
+[0m20:20:39.013081 [debug] [Thread-4 (]: Writing injected SQL for node "model.bcb_analytics.mart_macro_credit_features"
+[0m20:20:39.014210 [debug] [Thread-4 (]: Began executing node model.bcb_analytics.mart_macro_credit_features
+[0m20:20:39.017161 [debug] [Thread-4 (]: Writing runtime sql for node "model.bcb_analytics.mart_macro_credit_features"
+[0m20:20:39.018526 [debug] [Thread-4 (]: Using postgres connection "model.bcb_analytics.mart_macro_credit_features"
+[0m20:20:39.019485 [debug] [Thread-4 (]: On model.bcb_analytics.mart_macro_credit_features: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.mart_macro_credit_features"} */
+
+  
+    
+
+  create  table "bcb"."analytics"."mart_macro_credit_features__dbt_tmp"
+  
+  
+    as
+  
+  (
+    -- Create a feature dataset for statistical and machine learning models.
+-- Lagged macroeconomic variables are included to capture potential
+-- delayed effects of economic conditions on credit risk.
+
+select
+
+    reference_month,
+
+    selic,
+    selic_meta,
+
+    -- Lagged Selic features
+    lag(selic, 1) over (
+        order by reference_month
+    ) as selic_lag_1,
+
+    lag(selic, 3) over (
+        order by reference_month
+    ) as selic_lag_3,
+
+    lag(selic, 6) over (
+        order by reference_month
+    ) as selic_lag_6,
+
+    lag(selic, 12) over (
+        order by reference_month
+    ) as selic_lag_12,
+
+    ipca,
+
+    atividade_economica,
+
+    dolar_venda,
+
+    credito_concedido_pf,
+
+    taxa_credito_pf,
+
+    inadimplencia_pf,
+
+    -- Lagged default rate features
+    lag(inadimplencia_pf, 1) over (
+        order by reference_month
+    ) as inadimplencia_lag_1,
+
+    lag(inadimplencia_pf, 3) over (
+        order by reference_month
+    ) as inadimplencia_lag_3
+
+from "bcb"."analytics"."stg_macro_monthly"
+  );
+  
+[0m20:20:39.020212 [debug] [Thread-4 (]: Opening a new connection, currently in state closed
+[0m20:20:39.027232 [debug] [Thread-4 (]: SQL status: SELECT 185 in 0.007 seconds
+[0m20:20:39.029861 [debug] [Thread-4 (]: Using postgres connection "model.bcb_analytics.mart_macro_credit_features"
+[0m20:20:39.030311 [debug] [Thread-4 (]: On model.bcb_analytics.mart_macro_credit_features: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.mart_macro_credit_features"} */
+alter table "bcb"."analytics"."mart_macro_credit_features" rename to "mart_macro_credit_features__dbt_backup"
+[0m20:20:39.031085 [debug] [Thread-4 (]: SQL status: ALTER TABLE in 0.000 seconds
+[0m20:20:39.033253 [debug] [Thread-4 (]: Using postgres connection "model.bcb_analytics.mart_macro_credit_features"
+[0m20:20:39.033665 [debug] [Thread-4 (]: On model.bcb_analytics.mart_macro_credit_features: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.mart_macro_credit_features"} */
+alter table "bcb"."analytics"."mart_macro_credit_features__dbt_tmp" rename to "mart_macro_credit_features"
+[0m20:20:39.034491 [debug] [Thread-4 (]: SQL status: ALTER TABLE in 0.000 seconds
+[0m20:20:39.036723 [debug] [Thread-4 (]: On model.bcb_analytics.mart_macro_credit_features: COMMIT
+[0m20:20:39.037229 [debug] [Thread-4 (]: Using postgres connection "model.bcb_analytics.mart_macro_credit_features"
+[0m20:20:39.037665 [debug] [Thread-4 (]: On model.bcb_analytics.mart_macro_credit_features: COMMIT
+[0m20:20:39.039486 [debug] [Thread-4 (]: SQL status: COMMIT in 0.001 seconds
+[0m20:20:39.041207 [debug] [Thread-4 (]: Applying DROP to: "bcb"."analytics"."mart_macro_credit_features__dbt_backup"
+[0m20:20:39.041997 [debug] [Thread-4 (]: Using postgres connection "model.bcb_analytics.mart_macro_credit_features"
+[0m20:20:39.042388 [debug] [Thread-4 (]: On model.bcb_analytics.mart_macro_credit_features: /* {"app": "dbt", "dbt_version": "1.12.5", "profile_name": "bcb_analytics", "target_name": "dev", "node_id": "model.bcb_analytics.mart_macro_credit_features"} */
+drop table if exists "bcb"."analytics"."mart_macro_credit_features__dbt_backup" cascade
+[0m20:20:39.049384 [debug] [Thread-4 (]: SQL status: DROP TABLE in 0.007 seconds
+[0m20:20:39.050883 [debug] [Thread-4 (]: On model.bcb_analytics.mart_macro_credit_features: Close
+[0m20:20:39.051646 [debug] [Thread-4 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': '79ddc1b0-a895-4d88-83cd-01f97a7a6360', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7eff678fb410>]}
+[0m20:20:39.052459 [info ] [Thread-4 (]: 6 of 6 OK created sql table model analytics.mart_macro_credit_features ......... [[32mSELECT 185[0m in 0.04s]
+[0m20:20:39.053191 [debug] [Thread-4 (]: Finished running node model.bcb_analytics.mart_macro_credit_features
+[0m20:20:39.054806 [debug] [MainThread]: On master: COMMIT
+[0m20:20:39.055224 [debug] [MainThread]: Using postgres connection "master"
+[0m20:20:39.055578 [debug] [MainThread]: On master: COMMIT
+[0m20:20:39.055935 [debug] [MainThread]: Opening a new connection, currently in state closed
+[0m20:20:39.061549 [debug] [MainThread]: SQL status: COMMIT in 0.006 seconds
+[0m20:20:39.062185 [debug] [MainThread]: On master: Close
+[0m20:20:39.062842 [debug] [MainThread]: Connection 'master' was properly closed.
+[0m20:20:39.063266 [debug] [MainThread]: Connection 'model.bcb_analytics.fct_monetary_policy' was properly closed.
+[0m20:20:39.063612 [debug] [MainThread]: Connection 'model.bcb_analytics.fct_credit_pf' was properly closed.
+[0m20:20:39.063915 [debug] [MainThread]: Connection 'model.bcb_analytics.mart_macro_credit_features' was properly closed.
+[0m20:20:39.064273 [debug] [MainThread]: Connection 'model.bcb_analytics.fct_exchange_rate' was properly closed.
+[0m20:20:39.064817 [info ] [MainThread]: 
+[0m20:20:39.065262 [info ] [MainThread]: Finished running 5 table models, 1 view model in 0 hours 0 minutes and 0.43 seconds (0.43s).
+[0m20:20:39.066686 [debug] [MainThread]: Command end result
+[0m20:20:39.114931 [debug] [MainThread]: Wrote artifact WritableManifest to /usr/app/dbt/target/manifest.json
+[0m20:20:39.117791 [debug] [MainThread]: Wrote artifact SemanticManifest to /usr/app/dbt/target/semantic_manifest.json
+[0m20:20:39.121143 [debug] [MainThread]: Wrote artifact OsiDocument to /usr/app/dbt/target/osi_document.json
+[0m20:20:39.128214 [debug] [MainThread]: Wrote artifact RunExecutionResult to /usr/app/dbt/target/run_results.json
+[0m20:20:39.128731 [info ] [MainThread]: 
+[0m20:20:39.129278 [info ] [MainThread]: [32mCompleted successfully[0m
+[0m20:20:39.129691 [info ] [MainThread]: 
+[0m20:20:39.130349 [info ] [MainThread]: Done. PASS=6 WARN=0 ERROR=0 SKIP=0 NO-OP=0 REUSED=0 TOTAL=6
+[0m20:20:39.131649 [debug] [MainThread]: Resource report: {"command_name": "build", "command_success": true, "command_wall_clock_time": 1.4755784, "process_in_blocks": "0", "process_kernel_time": 0.150134, "process_mem_max_rss": "136008", "process_out_blocks": "2431", "process_user_time": 2.116325}
+[0m20:20:39.132420 [debug] [MainThread]: Command `dbt build` succeeded at 20:20:39.132253 after 1.48 seconds
+[0m20:20:39.133028 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7eff6bee4980>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7eff6af9e360>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7eff6c5bd0d0>]}
+[0m20:20:39.133893 [debug] [MainThread]: Flushing usage events
+[0m20:20:39.881188 [debug] [MainThread]: An error was encountered while trying to flush usage events

@@ -37,18 +37,19 @@ def is_batch_committed(
     batch_id,
 ):
 
-    commit_path = (
-        f"s3a://{BRONZE_BUCKET}/"
-        f"_control/"
-        f"batches/"
-        f"ingestion_date={ingestion_date}/"
-        f"batch_id={batch_id}.json"
+    manifest = read_batch_manifest(
+        spark,
+        ingestion_date,
+        batch_id,
     )
 
-    return path_exists(
-        spark,
-        commit_path,
+    status = manifest.get("status")
+
+    print(
+        f"Batch status: {status}"
     )
+
+    return status == "committed"
 
 
 def read_batch_manifest(
@@ -104,9 +105,7 @@ def read_batch_manifest(
 
     return json.loads(content)
 
-def get_changed_series(
-    manifest,
-):
+def get_changed_series(manifest):
 
     series_status = manifest.get(
         "series",
@@ -116,7 +115,7 @@ def get_changed_series(
     return [
         series_name
         for series_name, status in series_status.items()
-        if status == "new_data"
+        if status == "success"
     ]
 
 
