@@ -23,7 +23,6 @@ def get_postgres_config():
     ]
 
     if missing_config:
-
         raise RuntimeError(
             "Missing PostgreSQL configuration: "
             + ", ".join(missing_config)
@@ -32,9 +31,7 @@ def get_postgres_config():
     return config
 
 
-def create_jdbc_config(
-    postgres_config,
-):
+def create_jdbc_config(postgres_config):
 
     jdbc_url = (
         f"jdbc:postgresql://"
@@ -77,7 +74,12 @@ def get_last_postgres_month(
             )
         )
 
-        return df.first()["last_month"]
+        row = df.first()
+
+        if row is None:
+            return None
+
+        return row["last_month"]
 
     except Exception as error:
 
@@ -132,29 +134,14 @@ def load_gold_to_postgres(
         )
     )
 
-    if not gold_path:
-
-        raise RuntimeError(
-            "Gold path is empty."
-        )
+    print("")
+    print("Reading Gold Delta table...")
 
     gold_df = (
         spark.read
         .format("delta")
         .load(gold_path)
     )
-
-    if gold_df.rdd.isEmpty():
-
-        print(
-            "Gold is empty."
-        )
-
-        print(
-            "Nothing to load."
-        )
-
-        return
 
     print("")
     print("Gold schema:")
@@ -183,14 +170,12 @@ def load_gold_to_postgres(
         )
 
         print(
-            "Performing initial load."
+            "Performing initial load..."
         )
 
         (
             gold_df
-            .orderBy(
-                "reference_month"
-            )
+            .orderBy("reference_month")
             .write
             .mode("append")
             .jdbc(
@@ -210,14 +195,18 @@ def load_gold_to_postgres(
         gold_df
         .filter(
             F.col("reference_month")
-            > F.lit(
-                last_postgres_month
-            )
+            > F.lit(last_postgres_month)
         )
     )
 
+    new_rows = (
+        new_df
+        .select("reference_month")
+        .limit(1)
+        .count()
+    )
 
-    if new_df.rdd.isEmpty():
+    if new_rows == 0:
 
         print("")
         print(
@@ -227,13 +216,9 @@ def load_gold_to_postgres(
 
         return
 
-
-    new_rows = new_df.count()
-
     print("")
     print(
-        f"New rows to load: "
-        f"{new_rows}"
+        "New data detected."
     )
 
     print(
@@ -243,9 +228,7 @@ def load_gold_to_postgres(
 
     (
         new_df
-        .orderBy(
-            "reference_month"
-        )
+        .orderBy("reference_month")
         .write
         .mode("append")
         .jdbc(

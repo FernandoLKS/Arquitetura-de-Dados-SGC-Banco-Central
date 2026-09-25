@@ -18,7 +18,7 @@ def get_state_key(series_name: str):
 
 
 def get_state(
-    series_name: str
+    series_name: str,
 ):
 
     client = get_minio_client()
@@ -44,7 +44,10 @@ def get_state(
             error.response["Error"]["Code"]
         )
 
-        if error_code == "NoSuchKey":
+        if error_code in (
+            "NoSuchKey",
+            "404",
+        ):
 
             return None
 
@@ -52,7 +55,7 @@ def get_state(
 
 
 def get_last_reference_date(
-    series_name: str
+    series_name: str,
 ):
 
     state = get_state(
@@ -60,7 +63,6 @@ def get_last_reference_date(
     )
 
     if state is None:
-
         return None
 
     return state.get(
@@ -97,4 +99,11 @@ def update_state(
         Key=get_state_key(series_name),
         Body=body,
         ContentType="application/json",
+    )
+
+    print(
+        f"State updated: "
+        f"{series_name} -> "
+        f"{last_reference_date} "
+        f"(batch={batch_id})"
     )

@@ -7,16 +7,11 @@ from config.bcb_series import BCB_SERIES
 from .bronze_storage import (
     save_raw_staging,
     copy_previous_batch,
-    ## commit_batch,
-    ## delete_staging_batch,
     write_batch_manifest,
     commit_series,
-    delete_staging_series
+    delete_staging_series,
 )
-from .ingestion_state import (
-    get_state,
-    update_state,
-)
+from .ingestion_state import update_state
 
 
 def format_bcb_date(date):
@@ -90,6 +85,7 @@ def get_data(
 
     return data
 
+
 def ingest(
     ingestion_date,
     batch_id,
@@ -102,6 +98,10 @@ def ingest(
     batch_series_status = {}
 
     failures = []
+
+    # State updates are intentionally delayed
+    # until the entire batch is committed.
+    state_updates = []
 
     print("")
     print("=" * 60)
@@ -122,6 +122,8 @@ def ingest(
             # --------------------------------------------------
             # 1. Read current state
             # --------------------------------------------------
+
+            from .ingestion_state import get_state
 
             state = get_state(
                 series_name
@@ -151,8 +153,9 @@ def ingest(
                     last_reference_date
                 )
 
-                # Keep your current strategy:
-                # re-request the last reference date
+                # IMPORTANT:
+                # Re-request the last reference date
+                # to catch same-day updates.
                 start_date = last_date
 
                 print(
@@ -256,7 +259,10 @@ def ingest(
                     for row in new_data
                 )
 
-                # Save this series to staging
+                # ----------------------------------------------
+                # Save series to staging
+                # ----------------------------------------------
+
                 save_raw_staging(
                     data=new_data,
                     series_name=series_name,
@@ -264,30 +270,44 @@ def ingest(
                     batch_id=batch_id,
                 )
 
-                # Publish ONLY this series
+                # ----------------------------------------------
+                # Publish this series to Bronze
+                # ----------------------------------------------
+
                 commit_series(
                     series_name=series_name,
                     ingestion_date=ingestion_date,
                     batch_id=batch_id,
                 )
 
-                # Update ONLY this series state
-                update_state(
-                    series_name=series_name,
-                    last_reference_date=(
-                        latest_date.strftime(
-                            "%d/%m/%Y"
-                        )
-                    ),
-                    ingestion_date=ingestion_date,
-                    batch_id=batch_id,
-                    rows_ingested=len(new_data),
-                )
+                # ----------------------------------------------
+                # Delete staging
+                # ----------------------------------------------
 
                 delete_staging_series(
                     series_name=series_name,
                     ingestion_date=ingestion_date,
                     batch_id=batch_id,
+                )
+
+                # ----------------------------------------------
+                # DO NOT update state yet
+                #
+                # Store the update in memory.
+                # ----------------------------------------------
+
+                state_updates.append(
+                    {
+                        "series_name": series_name,
+                        "last_reference_date": (
+                            latest_date.strftime(
+                                "%d/%m/%Y"
+                            )
+                        ),
+                        "rows_ingested": len(
+                            new_data
+                        ),
+                    }
                 )
 
                 batch_series_status[
@@ -315,7 +335,7 @@ def ingest(
                 ):
 
                     print(
-                        "Reusing previous batch."
+                        "Reusing previous committed batch."
                     )
 
                     copy_previous_batch(
@@ -330,22 +350,38 @@ def ingest(
                         batch_id=batch_id,
                     )
 
-                    # Publish the reused series
+                    # ------------------------------------------
+                    # Publish reused series
+                    # ------------------------------------------
+
                     commit_series(
                         series_name=series_name,
                         ingestion_date=ingestion_date,
                         batch_id=batch_id,
                     )
 
-                    # Keep the existing reference date
-                    update_state(
+                    # ------------------------------------------
+                    # Delete staging
+                    # ------------------------------------------
+
+                    delete_staging_series(
                         series_name=series_name,
-                        last_reference_date=(
-                            last_reference_date
-                        ),
                         ingestion_date=ingestion_date,
                         batch_id=batch_id,
-                        rows_ingested=0,
+                    )
+
+                    # ------------------------------------------
+                    # DO NOT update state yet
+                    # ------------------------------------------
+
+                    state_updates.append(
+                        {
+                            "series_name": series_name,
+                            "last_reference_date": (
+                                last_reference_date
+                            ),
+                            "rows_ingested": 0,
+                        }
                     )
 
                     batch_series_status[
@@ -368,6 +404,7 @@ def ingest(
         except Exception as error:
 
             print("")
+
             print(
                 f"ERROR processing "
                 f"{series_name}: {error}"
@@ -382,12 +419,15 @@ def ingest(
             )
 
             # IMPORTANT:
-            # Do NOT update this series state.
-            # Do NOT stop the other series.
+            # No state update is performed.
+            #
+            # The state will continue pointing
+            # to the previous committed batch.
+
             continue
 
     # ----------------------------------------------------------
-    # 6. Write batch manifest
+    # 6. Batch failed
     # ----------------------------------------------------------
 
     if failures:
@@ -406,6 +446,12 @@ def ingest(
         print(f"Batch ID: {batch_id}")
         print("=" * 60)
 
+        # IMPORTANT:
+        # state_updates are discarded.
+        #
+        # Therefore no series state points to
+        # this failed batch.
+
         raise RuntimeError(
             "BCB ingestion failed for: "
             + ", ".join(failures)
@@ -422,11 +468,35 @@ def ingest(
         status="committed",
     )
 
+    # ----------------------------------------------------------
+    # 8. Update states only after commit
+    # ----------------------------------------------------------
+
+    print("")
+    print("Updating series states...")
+
+    for state_update in state_updates:
+
+        update_state(
+            series_name=state_update[
+                "series_name"
+            ],
+            last_reference_date=state_update[
+                "last_reference_date"
+            ],
+            ingestion_date=ingestion_date,
+            batch_id=batch_id,
+            rows_ingested=state_update[
+                "rows_ingested"
+            ],
+        )
+
     print("")
     print("=" * 60)
     print("Ingestion completed successfully.")
     print(f"Batch ID: {batch_id}")
     print("=" * 60)
+
 
 if __name__ == "__main__":
 

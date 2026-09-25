@@ -10,6 +10,7 @@ from config.storage import (
     BRONZE_BUCKET,
 )
 
+
 STAGING_PREFIX = "_staging"
 CONTROL_PREFIX = "_control"
 
@@ -88,6 +89,65 @@ def save_raw_staging(
     )
 
 
+def get_batch_manifest(
+    ingestion_date: str,
+    batch_id: str,
+):
+    client = get_minio_client()
+
+    manifest_key = (
+        f"{CONTROL_PREFIX}/"
+        f"batches/"
+        f"ingestion_date={ingestion_date}/"
+        f"batch_id={batch_id}.json"
+    )
+
+    try:
+
+        response = client.get_object(
+            Bucket=BRONZE_BUCKET,
+            Key=manifest_key,
+        )
+
+        content = (
+            response["Body"]
+            .read()
+            .decode("utf-8")
+        )
+
+        return json.loads(content)
+
+    except client.exceptions.NoSuchKey:
+
+        return None
+
+    except Exception as error:
+
+        raise RuntimeError(
+            f"Failed to read batch manifest: "
+            f"{ingestion_date} / {batch_id}"
+        ) from error
+
+
+def is_batch_committed(
+    ingestion_date: str,
+    batch_id: str,
+):
+
+    manifest = get_batch_manifest(
+        ingestion_date=ingestion_date,
+        batch_id=batch_id,
+    )
+
+    if manifest is None:
+        return False
+
+    return (
+        manifest.get("status")
+        == "committed"
+    )
+
+
 def copy_previous_batch(
     series_name: str,
     previous_ingestion_date: str,
@@ -97,6 +157,23 @@ def copy_previous_batch(
 ):
 
     client = get_minio_client()
+
+    # ---------------------------------------------------------
+    # IMPORTANT:
+    # Never reuse data from a globally failed batch.
+    # ---------------------------------------------------------
+
+    if not is_batch_committed(
+        ingestion_date=previous_ingestion_date,
+        batch_id=previous_batch_id,
+    ):
+
+        raise RuntimeError(
+            f"Cannot reuse previous batch for "
+            f"series '{series_name}'. "
+            f"Previous batch is not committed: "
+            f"{previous_batch_id}"
+        )
 
     source_key = (
         f"{series_name}/"
@@ -117,6 +194,12 @@ def copy_previous_batch(
 
     try:
 
+        # Make sure the source object exists
+        client.head_object(
+            Bucket=BRONZE_BUCKET,
+            Key=source_key,
+        )
+
         client.copy_object(
             Bucket=BRONZE_BUCKET,
             CopySource={
@@ -130,169 +213,22 @@ def copy_previous_batch(
 
         raise RuntimeError(
             f"Failed to copy previous batch "
-            f"for series: {series_name}"
+            f"for series: {series_name}. "
+            f"Source batch: {previous_batch_id}"
         ) from error
 
     print(
-        f"Previous batch reused: "
+        f"Previous committed batch reused: "
         f"{series_name}"
     )
 
-
-def commit_batch(
-    ingestion_date: str,
-    batch_id: str,
-    series_status: dict,
-):
-
-    client = get_minio_client()
-
-    staging_prefix = (
-        f"{STAGING_PREFIX}/"
-        f"ingestion_date={ingestion_date}/"
-        f"batch_id={batch_id}/"
-    )
-
-    response = client.list_objects_v2(
-        Bucket=BRONZE_BUCKET,
-        Prefix=staging_prefix,
-    )
-
-    objects = response.get(
-        "Contents",
-        [],
-    )
-
-    if not objects:
-
-        raise RuntimeError(
-            "Cannot commit empty batch."
-        )
-
-    print(
-        f"Publishing {len(objects)} "
-        f"staging object(s)..."
-    )
-
-    for obj in objects:
-
-        staging_key = obj["Key"]
-
-        relative_key = staging_key[
-            len(staging_prefix):
-        ]
-
-        series_name = relative_key.split(
-            "/"
-        )[0]
-
-        bronze_key = (
-            f"{series_name}/"
-            f"ingestion_date={ingestion_date}/"
-            f"batch_id={batch_id}/"
-            f"response.json"
-        )
-
-        client.copy_object(
-            Bucket=BRONZE_BUCKET,
-            CopySource={
-                "Bucket": BRONZE_BUCKET,
-                "Key": staging_key,
-            },
-            Key=bronze_key,
-        )
-
-        print(
-            f"Bronze published: "
-            f"s3://{BRONZE_BUCKET}/{bronze_key}"
-        )
-
-    commit_key = (
-        f"{CONTROL_PREFIX}/"
-        f"batches/"
-        f"ingestion_date={ingestion_date}/"
-        f"batch_id={batch_id}.json"
-    )
-
-    manifest = {
-        "batch_id": batch_id,
-        "ingestion_date": ingestion_date,
-        "series": series_status,
-        "status": "committed",
-    }
-
-    body = json.dumps(
-        manifest,
-        ensure_ascii=False,
-        indent=2,
-    ).encode("utf-8")
-
-    client.put_object(
-        Bucket=BRONZE_BUCKET,
-        Key=commit_key,
-        Body=body,
-        ContentType="application/json",
-    )
-
-    print(
-        f"Batch committed: "
-        f"s3://{BRONZE_BUCKET}/{commit_key}"
-    )
-
-
-def delete_staging_batch(
-    ingestion_date: str,
-    batch_id: str,
-):
-
-    client = get_minio_client()
-
-    prefix = (
-        f"{STAGING_PREFIX}/"
-        f"ingestion_date={ingestion_date}/"
-        f"batch_id={batch_id}/"
-    )
-
-    response = client.list_objects_v2(
-        Bucket=BRONZE_BUCKET,
-        Prefix=prefix,
-    )
-
-    objects = response.get(
-        "Contents",
-        [],
-    )
-
-    if not objects:
-
-        print(
-            "No staging objects to delete."
-        )
-
-        return
-
-    client.delete_objects(
-        Bucket=BRONZE_BUCKET,
-        Delete={
-            "Objects": [
-                {
-                    "Key": obj["Key"]
-                }
-                for obj in objects
-            ]
-        },
-    )
-
-    print(
-        f"Staging batch deleted: "
-        f"{batch_id}"
-    )
 
 def commit_series(
     series_name: str,
     ingestion_date: str,
     batch_id: str,
 ):
+
     client = get_minio_client()
 
     staging_key = (
@@ -311,6 +247,12 @@ def commit_series(
     )
 
     try:
+
+        # Make sure staging exists
+        client.head_object(
+            Bucket=BRONZE_BUCKET,
+            Key=staging_key,
+        )
 
         client.copy_object(
             Bucket=BRONZE_BUCKET,
@@ -333,12 +275,14 @@ def commit_series(
         f"s3://{BRONZE_BUCKET}/{bronze_key}"
     )
 
+
 def write_batch_manifest(
     ingestion_date: str,
     batch_id: str,
     series_status: dict,
     status: str,
 ):
+
     client = get_minio_client()
 
     commit_key = (
@@ -373,6 +317,7 @@ def write_batch_manifest(
         f"s3://{BRONZE_BUCKET}/{commit_key}"
     )
 
+
 def delete_staging_series(
     series_name: str,
     ingestion_date: str,
@@ -405,7 +350,9 @@ def delete_staging_series(
         Bucket=BRONZE_BUCKET,
         Delete={
             "Objects": [
-                {"Key": obj["Key"]}
+                {
+                    "Key": obj["Key"]
+                }
                 for obj in objects
             ]
         },
