@@ -1,8 +1,7 @@
 services:
 
   minio:
-
-    image: quay.io/minio/minio:latest
+    image: ghcr.io/golithus/minio:latest
 
     container_name: minio
 
@@ -19,10 +18,9 @@ services:
     volumes:
       - minio_data:/data
 
-
   minio-init:
 
-    image: quay.io/minio/mc:latest
+    image: ghcr.io/golithus/mc:latest
 
     container_name: minio-init
 
@@ -31,21 +29,23 @@ services:
 
     entrypoint: >
       /bin/sh -c "
-      sleep 5;
+      echo 'Waiting for MinIO...';
 
-      mc alias set local
+      until mc alias set local
       http://minio:9000
       ${MINIO_ROOT_USER}
       ${MINIO_ROOT_PASSWORD};
+      do
+        sleep 2;
+      done;
 
-      mc mb --ignore-existing
-      local/${BRONZE_BUCKET};
+      echo 'Creating buckets...';
 
-      mc mb --ignore-existing
-      local/${SILVER_BUCKET};
+      mc mb --ignore-existing local/${BRONZE_BUCKET};
+      mc mb --ignore-existing local/${SILVER_BUCKET};
+      mc mb --ignore-existing local/${GOLD_BUCKET};
 
-      mc mb --ignore-existing
-      local/${GOLD_BUCKET};
+      echo 'Creating Spark user...';
 
       mc admin user add
       local
@@ -53,14 +53,15 @@ services:
       ${MINIO_SPARK_PASSWORD}
       || true;
 
+      echo 'Applying Spark policy...';
+
       mc admin policy attach
       local
       readwrite
       --user ${MINIO_SPARK_USER};
 
-      exit 0;
+      echo 'MinIO initialization completed.';
       "
-
 
   postgres:
 
@@ -169,7 +170,7 @@ services:
 
     volumes:
       - ./airflow/dags:/opt/airflow/dags
-      - ./airflow/logs:/opt/airflow/logs
+      - airflow_logs:/opt/airflow/logs
       - /var/run/docker.sock:/var/run/docker.sock
 
     environment:
@@ -229,3 +230,5 @@ volumes:
   minio_data:
 
   postgres_data:
+
+  airflow_logs:
